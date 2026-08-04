@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RECARGAS ORBET | Recargas de Juegos Instantáneas 24/7</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f4ff',
+                            100: '#e0e9ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            cyan: '#00f2fe',
+                            purple: '#7928ca',
+                            magenta: '#ff0080',
+                            gold: '#fbbf24',
+                            dark: '#0a0d14',
+                            card: '#121824',
+                            border: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #06080e;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-display {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Neon Glow Effects */
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+            border-color: rgba(0, 242, 254, 0.5);
+        }
+        .neon-border-magenta {
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.25);
+            border-color: rgba(255, 0, 128, 0.5);
+        }
+        .neon-glow-btn {
+            background: linear-gradient(135deg, #00f2fe 0%, #4f46e5 100%);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            transition: all 0.3s ease;
+        }
+        .neon-glow-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(18, 24, 36, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #06080e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
+        }
+
+        /* Pulsing Status Dot */
+        @keyframes pulse-fast {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.9); }
+        }
+        .animate-pulse-fast {
+            animation: pulse-fast 1.5s infinite ease-in-out;
+        }
+
+        /* Live notification toast slide */
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-cyan selection:text-black">
+
+    <!-- TOP ANNOUNCEMENT BAR -->
+    <div class="bg-gradient-to-r from-brand-purple via-indigo-900 to-brand-cyan text-white text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-lg">
+        <span class="bg-amber-400 text-black px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">OFERTA</span>
+        <span>¡Obtén hasta <strong>+20% de Bonificación Gratis</strong> en todas las recargas de Free Fire y Mobile Legends hoy!</span>
+        <i class="fa-solid fa-bolt text-yellow-300 animate-bounce ml-1"></i>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- LOGO -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-cyan via-brand-600 to-brand-magenta p-0.5 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <div class="w-full h-full bg-brand-dark rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-[#00f2fe] fa-gamepad text-brand-cyan text-xl group-hover:rotate-12 transition-transform"></i>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-black text-xl tracking-wider text-white flex items-center gap-1">
+                            RECARGAS <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-magenta">ORBET</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-medium tracking-widest uppercase flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse-fast"></span> Servidores Online 24/7
+                        </span>
+                    </div>
+                </a>
+
+                <!-- DESKTOP NAV LINKS -->
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                    <a href="#juegos" class="text-white hover:text-brand-cyan transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-fire text-amber-400"></i> Juegos Populares
+                    </a>
+                    <a href="#tarjetas" class="text-slate-300 hover:text-brand-cyan transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-gift text-brand-magenta"></i> Tarjetas de Regalo
+                    </a>
+                    <a href="#rastreo" class="text-slate-300 hover:text-brand-cyan transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass text-cyan-400"></i> Consultar Pedido
+                    </a>
+                    <a href="#faq" class="text-slate-300 hover:text-brand-cyan transition-colors">Preguntas Frecuentes</a>
+                </nav>
+
+                <!-- HEADER RIGHT BUTTONS -->
+                <div class="hidden sm:flex items-center gap-4">
+                    <a href="#rastreo" class="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 transition">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Estado
+                    </a>
+                    <a href="https://wa.me/" target="_blank" class="neon-glow-btn px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider text-black rounded-xl flex items-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-base"></i> Soporte VIP
+                    </a>
+                </div>
+
+                <!-- MOBILE MENU BUTTON -->
+                <div class="md:hidden flex items-center gap-3">
+                    <button id="mobile-menu-btn" class="text-slate-300 hover:text-white p-2 rounded-lg bg-slate-800/50 border border-slate-700">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE NAVIGATION DRAWER -->
+        <div id="mobile-menu" class="hidden md:hidden glass-card border-b border-slate-800 px-4 py-4 space-y-3">
+            <a href="#juegos" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800/80 font-medium">🎮 Juegos Populares</a>
+            <a href="#tarjetas" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800/80 font-medium">🎁 Tarjetas de Regalo</a>
+            <a href="#rastreo" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800/80 font-medium">🔍 Consultar Pedido</a>
+            <a href="#faq" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800/80 font-medium">❓ Preguntas Frecuentes</a>
+            <div class="pt-2 border-t border-slate-800 flex flex-col gap-2">
+                <a href="https://wa.me/" target="_blank" class="w-full neon-glow-btn text-center py-2.5 text-xs font-bold uppercase tracking-wider text-black rounded-lg">
+                    <i class="fa-brands fa-whatsapp mr-1"></i> Soporte WhatsApp
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- RECENT TRANSACTIONS TICKER -->
+    <div class="bg-slate-950/80 border-b border-slate-800/60 py-2.5 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 flex items-center gap-3 text-xs">
+            <span class="flex items-center gap-1.5 text-emerald-400 font-bold whitespace-nowrap bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> RECIENTE
+            </span>
+            <div class="overflow-hidden relative w-full">
+                <div id="ticker-content" class="whitespace-nowrap transition-all duration-500 text-slate-300">
+                    <span class="text-white font-semibold">Carlos M.</span> recargó <span class="text-cyan-400 font-bold">1,080 + 108 Diamantes</span> en Free Fire <span class="text-slate-500">(Hace 12 segs)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow">
+
+        <!-- HERO SECTION -->
+        <section class="relative py-12 lg:py-20 overflow-hidden">
+            <!-- Ambient Background Glows -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-brand-cyan/15 rounded-full blur-[130px] -z-10 pointer-events-none"></div>
+            <div class="absolute top-1/3 right-10 w-[400px] h-[300px] bg-brand-magenta/15 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    <!-- Left Copy Column -->
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card border-brand-cyan/30 text-xs font-semibold text-brand-cyan">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Proveedor Directo Verificado & Entrega Autómata</span>
+                        </div>
+                        
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-tight">
+                            Recargas de Juegos <br class="hidden sm:inline">
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-indigo-400 to-brand-magenta">Instantáneas y Seguras</span>
+                        </h1>
+                        
+                        <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+                            Carga Diamantes, Pavos, Puntos de Batalla y Tarjetas de Regalo en segundos usando tu ID de jugador. Pagos en moneda local, Binance Pay, Pago Móvil y Tarjetas con acreditación automática de 1 a 3 minutos.
+                        </p>
+
+                        <!-- Search Bar Component -->
+                        <div class="pt-2 max-w-xl mx-auto lg:mx-0">
+                            <div class="relative flex items-center">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-lg"></i>
+                                <input type="text" id="game-search" placeholder="Busca tu juego favorito (ej. Free Fire, PUBG, Roblox...)" class="w-full bg-slate-900/90 text-white placeholder-slate-500 pl-12 pr-32 py-4 rounded-2xl border border-slate-700 focus:border-brand-cyan focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition text-sm sm:text-base font-medium shadow-2xl">
+                                <button type="button" class="absolute right-2 neon-glow-btn text-black font-bold text-xs uppercase px-5 py-2.5 rounded-xl transition">
+                                    Buscar
+                                </button>
+                            </div>
+                            <div class="mt-3 flex flex-wrap gap-2 justify-center lg:justify-start text-xs text-slate-400">
+                                <span class="font-semibold text-slate-500">Populares:</span>
+                                <button onclick="quickFilter('Free Fire')" class="hover:text-brand-cyan underline decoration-slate-600">Free Fire</button>
+                                <button onclick="quickFilter('Mobile Legends')" class="hover:text-brand-cyan underline decoration-slate-600">Mobile Legends</button>
+                                <button onclick="quickFilter('PUBG')" class="hover:text-brand-cyan underline decoration-slate-600">PUBG Mobile</button>
+                                <button onclick="quickFilter('Roblox')" class="hover:text-brand-cyan underline decoration-slate-600">Roblox</button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Badge Bar -->
+                        <div class="pt-6 grid grid-cols-3 gap-4 border-t border-slate-800/80 max-w-lg mx-auto lg:mx-0">
+                            <div>
+                                <p class="font-display font-bold text-2xl text-white">+500K</p>
+                                <p class="text-xs text-slate-400">Recargas Exitosas</p>
+                            </div>
+                            <div>
+                                <p class="font-display font-bold text-2xl text-brand-cyan">⚡ 90 seg</p>
+                                <p class="text-xs text-slate-400">Tiempo Promedio</p>
+                            </div>
+                            <div>
+                                <p class="font-display font-bold text-2xl text-emerald-400">4.9 / 5★</p>
+                                <p class="text-xs text-slate-400">Calificación Clientes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Promo Feature Card -->
+                    <div class="lg:col-span-5">
+                        <div class="relative glass-card rounded-3xl p-6 border border-slate-700/60 shadow-2xl overflow-hidden group">
+                            <div class="absolute top-0 right-0 bg-gradient-to-l from-brand-magenta to-transparent text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-xl tracking-widest">
+                                Destacado de la Semana
+                            </div>
+                            
+                            <div class="relative h-64 sm:h-72 rounded-2xl overflow-hidden mb-5">
+                                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop" alt="Free Fire Promo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                                <div class="absolute bottom-4 left-4 right-4">
+                                    <span class="bg-amber-400 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">Bono Exclusivo</span>
+                                    <h3 class="font-display font-extrabold text-2xl text-white mt-1">Free Fire - Pases y Diamantes</h3>
+                                    <p class="text-xs text-slate-300">Recarga por ID de jugador de forma directa e instantánea</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
+                                        💎
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400">Paquete Recomendado</p>
+                                        <p class="text-sm font-bold text-white">1,080 + 108 Diamantes Bonus</p>
+                                    </div>
+                                </div>
+                                <button onclick="openTopUpModal('Free Fire', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400&auto=format&fit=crop')" class="neon-glow-btn text-black font-extrabold text-xs px-4 py-2 rounded-lg">
+                                    Recargar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- GAMES SECTION HEADER & CATEGORY TABS -->
+        <section id="juegos" class="py-12 bg-slate-950/60 border-t border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                    <div>
+                        <span class="text-brand-cyan text-xs font-bold uppercase tracking-widest">Catálogo Oficial</span>
+                        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white mt-1">
+                            Selecciona tu Juego
+                        </h2>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        <button onclick="filterCategory('all')" class="cat-btn active bg-brand-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-brand-500 whitespace-nowrap transition">
+                            Todos
+                        </button>
+                        <button onclick="filterCategory('mobile')" class="cat-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-800 whitespace-nowrap transition">
+                            📱 Juegos Móviles
+                        </button>
+                        <button onclick="filterCategory('pc')" class="cat-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-800 whitespace-nowrap transition">
+                            🖥️ PC & Consolas
+                        </button>
+                        <button onclick="filterCategory('giftcards')" class="cat-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-800 whitespace-nowrap transition">
+                            🎁 Tarjetas de Regalo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GAMES GRID -->
+                <div id="games-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+                    
+                    <!-- Game Card 1: Free Fire -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile" data-name="Free Fire" onclick="openTopUpModal('Free Fire', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400&auto=format&fit=crop" alt="Free Fire" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <span class="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">Bono +10%</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Garena</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Free Fire</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Entrega Directa</span>
+                            <span class="text-brand-cyan font-bold">💎 ID</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 2: Mobile Legends -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile" data-name="Mobile Legends Bang Bang" onclick="openTopUpModal('Mobile Legends', 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=400&auto=format&fit=crop" alt="Mobile Legends" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <span class="absolute top-2 left-2 bg-brand-cyan text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">Auto Instant</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Moonton</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Mobile Legends</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Diamonds</span>
+                            <span class="text-brand-cyan font-bold">⚡ Fast</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 3: PUBG Mobile -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile" data-name="PUBG Mobile UC" onclick="openTopUpModal('PUBG Mobile', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=400&auto=format&fit=crop" alt="PUBG Mobile" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Tencent</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">PUBG Mobile</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">UC Cash</span>
+                            <span class="text-brand-cyan font-bold">🪖 Global</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 4: Roblox -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile pc giftcards" data-name="Roblox Robux" onclick="openTopUpModal('Roblox (Robux)', 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?q=80&w=400&auto=format&fit=crop" alt="Roblox" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <span class="absolute top-2 left-2 bg-brand-magenta text-white text-[10px] font-black px-2 py-0.5 rounded uppercase">Más Vendido</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Roblox Corp</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Roblox (Robux)</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Gift Card / Direct</span>
+                            <span class="text-brand-cyan font-bold">🧱 Robux</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 5: COD Mobile -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile" data-name="Call of Duty Mobile CP" onclick="openTopUpModal('Call of Duty Mobile', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop" alt="COD Mobile" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Activision</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">COD Mobile</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">CP Points</span>
+                            <span class="text-brand-cyan font-bold">🔫 Direct ID</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 6: Genshin Impact -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile pc" data-name="Genshin Impact Genesis Crystals" onclick="openTopUpModal('Genshin Impact', 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?q=80&w=400&auto=format&fit=crop" alt="Genshin Impact" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">HoYoverse</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Genshin Impact</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Cristales Génesis</span>
+                            <span class="text-brand-cyan font-bold">✨ UID</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 7: Valorant -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="pc" data-name="Valorant VP Points" onclick="openTopUpModal('Valorant', 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?q=80&w=400&auto=format&fit=crop" alt="Valorant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Riot Games</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Valorant</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">VP Points</span>
+                            <span class="text-brand-cyan font-bold">🎯 Código</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 8: Steam Gift Card -->
+                    <div id="tarjetas" class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="pc giftcards" data-name="Steam Wallet Gift Card" onclick="openTopUpModal('Steam Wallet', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop" alt="Steam Wallet" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <span class="absolute top-2 left-2 bg-emerald-500 text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">Saldo Global</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Valve</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Steam Wallet</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Tarjetas de Regalo</span>
+                            <span class="text-brand-cyan font-bold">💳 USD</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 9: Brawl Stars -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile" data-name="Brawl Stars Gems" onclick="openTopUpModal('Brawl Stars', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop" alt="Brawl Stars" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Supercell</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Brawl Stars</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Gemas & Pases</span>
+                            <span class="text-brand-cyan font-bold">🟢 Player Tag</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 10: EA FC 24 / FIFA -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="mobile pc" data-name="EA SPORTS FC Points" onclick="openTopUpModal('EA SPORTS FC Mobile', 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=400&auto=format&fit=crop" alt="EA Sports FC" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">EA Sports</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">EA FC Mobile</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">FC Points</span>
+                            <span class="text-brand-cyan font-bold">⚽ Instant</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 11: Playstation Gift Card -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="pc giftcards" data-name="PlayStation Network Gift Card" onclick="openTopUpModal('PlayStation Store', 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=400&auto=format&fit=crop" alt="PlayStation" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Sony PSN</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">PlayStation Store</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Gift Card Digital</span>
+                            <span class="text-brand-cyan font-bold">🎮 Code</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Card 12: Google Play -->
+                    <div class="game-card glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-cyan transition-all duration-300 hover:-translate-y-1.5 shadow-xl group cursor-pointer" data-category="giftcards mobile" data-name="Google Play Store Code" onclick="openTopUpModal('Google Play Gift Card', 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=400&auto=format&fit=crop')">
+                        <div class="relative aspect-[3/4] overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=400&auto=format&fit=crop" alt="Google Play" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Google</span>
+                                <h3 class="font-extrabold text-white text-base leading-snug">Google Play</h3>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-900/90 flex items-center justify-between text-xs border-t border-slate-800">
+                            <span class="text-slate-400 font-medium">Tarjeta Digital</span>
+                            <span class="text-brand-cyan font-bold">🤖 Android</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- WHY CHOOSE RECARGAS ORBET -->
+        <section class="py-16 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-brand-cyan text-xs font-bold uppercase tracking-widest">Confianza Garantizada</span>
+                    <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white mt-1">¿Por qué recargar con nosotros?</h2>
+                    <p class="text-slate-400 text-sm mt-2">Optimizamos todo el proceso para que no pierdas ni un segundo fuera del juego.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 hover:border-brand-cyan/40 transition">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl mb-4 border border-cyan-500/20">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <h3 class="text-white font-bold text-lg mb-2">Procesamiento Automatizado</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Nuestra API conectada a los servidores oficiales despacha tus cargas entre 1 y 3 minutos sin demoras humanas.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 hover:border-brand-cyan/40 transition">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-2xl mb-4 border border-indigo-500/20">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h3 class="text-white font-bold text-lg mb-2">Solo necesitas tu ID</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Jamás te pediremos contraseñas ni datos sensibles de tu cuenta. Recargas 100% seguras sin riesgo de ban.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 hover:border-brand-cyan/40 transition">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-4 border border-emerald-500/20">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <h3 class="text-white font-bold text-lg mb-2">Múltiples Formas de Pago</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Aceptamos Pago Móvil, Binance Pay, USDT, Zelle, PayPal, Tarjetas Internacionales y Criptomonedas.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 hover:border-brand-cyan/40 transition">
+                        <div class="w-12 h-12 rounded-xl bg-magenta-500/10 text-brand-magenta flex items-center justify-center text-2xl mb-4 border border-brand-magenta/20">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                        <h3 class="text-white font-bold text-lg mb-2">Atención Humana 24/7</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Un equipo de soporte técnico dedicado listo para resolver cualquier consulta en segundos vía WhatsApp.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ORDER TRACKING SECTION -->
+        <section id="rastreo" class="py-16 bg-slate-950/80 border-t border-slate-800/80 relative">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="glass-card p-8 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 text-slate-800/20 text-9xl font-black font-display pointer-events-none select-none">
+                        ORBET
+                    </div>
+
+                    <div class="text-center max-w-xl mx-auto mb-8">
+                        <span class="text-brand-cyan text-xs font-bold uppercase tracking-widest">Rastreo de Transacción</span>
+                        <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-white mt-1">¿Compraste recientemente? Consulta tu Orden</h2>
+                        <p class="text-slate-400 text-xs mt-1">Ingresa el código de pedido o ID de cuenta para verificar el estado de entrega en tiempo real.</p>
+                    </div>
+
+                    <form id="track-form" onsubmit="handleTrackOrder(event)" class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+                        <input type="text" id="order-id-input" placeholder="Ej: ORB-8921034 o ID de jugador" required class="flex-grow bg-slate-900 text-white placeholder-slate-500 px-4 py-3.5 rounded-xl border border-slate-700 focus:border-brand-cyan focus:outline-none text-sm font-mono">
+                        <button type="submit" class="neon-glow-btn text-black font-extrabold text-xs uppercase px-6 py-3.5 rounded-xl whitespace-nowrap">
+                            <i class="fa-solid fa-magnifying-glass mr-1"></i> Verificar Estado
+                        </button>
+                    </form>
+
+                    <!-- ORDER RESULT BOX CONTAINER -->
+                    <div id="order-result" class="hidden mt-6 p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-sm">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section id="faq" class="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <span class="text-brand-cyan text-xs font-bold uppercase tracking-widest">Respuestas Rápidas</span>
+                <h2 class="font-display font-extrabold text-3xl text-white mt-1">Preguntas Frecuentes</h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="glass-card rounded-xl border border-slate-800 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full text-left p-5 text-white font-bold text-sm sm:text-base flex justify-between items-center hover:bg-slate-800/40 transition">
+                        <span>¿Cuánto tiempo tarda en llegar mi recarga?</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 border-t border-slate-800/60 pt-3 leading-relaxed">
+                        El 98% de las recargas se procesan de forma automatizada entre <strong>1 y 3 minutos</strong> tras la confirmación de tu pago. Si hay alguna actualización de servidor del juego, puede demorar hasta 15 minutos.
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl border border-slate-800 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full text-left p-5 text-white font-bold text-sm sm:text-base flex justify-between items-center hover:bg-slate-800/40 transition">
+                        <span>¿Es seguro colocar mi ID de Jugador?</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 border-t border-slate-800/60 pt-3 leading-relaxed">
+                        Totalmente seguro. Las recargas por ID son enlaces oficiales autorizados por las distribuidoras (Garena, Moonton, Tencent, etc.). No requerimos contraseñas de acceso ni correos personales.
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl border border-slate-800 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full text-left p-5 text-white font-bold text-sm sm:text-base flex justify-between items-center hover:bg-slate-800/40 transition">
+                        <span>¿Qué hago si ingresé mal mi ID?</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 border-t border-slate-800/60 pt-3 leading-relaxed">
+                        Contáctanos de inmediato por nuestro botón de soporte de WhatsApp con el comprobante de pago antes de que la orden automatizada sea enviada para corregir los datos manualmente.
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl border border-slate-800 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full text-left p-5 text-white font-bold text-sm sm:text-base flex justify-between items-center hover:bg-slate-800/40 transition">
+                        <span>¿Cuáles son las comisiones por pago?</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 border-t border-slate-800/60 pt-3 leading-relaxed">
+                        En Recargas Orbet no cobramos comisiones ocultas. El precio mostrado en la calculadora al elegir tu método de pago es el total final neto a pagar.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- INTERACTIVE TOP-UP PROCESS MODAL -->
+    <div id="topup-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card max-w-2xl w-full rounded-3xl border border-slate-700 shadow-2xl overflow-hidden my-8 animate-slide-in">
+            
+            <!-- Modal Header -->
+            <div class="p-5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img id="modal-game-img" src="" alt="Game" class="w-12 h-12 rounded-xl object-cover border border-slate-700">
+                    <div>
+                        <span class="text-[10px] text-brand-cyan font-extrabold uppercase tracking-widest">Formulario de Recarga</span>
+                        <h3 id="modal-game-title" class="font-display font-extrabold text-xl text-white">Cargando Juego...</h3>
+                    </div>
+                </div>
+                <button onclick="closeTopUpModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Steps Form -->
+            <form id="topup-form" onsubmit="processOrder(event)" class="p-6 space-y-6">
+                
+                <!-- STEP 1: PLAYER ID -->
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+                        1. Ingrese su ID de Jugador / Player Tag <span class="text-brand-magenta">*</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="text" id="player-id" required placeholder="Ej: 5820194821" class="w-full bg-slate-950 text-white placeholder-slate-600 px-4 py-3 rounded-xl border border-slate-700 focus:border-brand-cyan focus:outline-none text-sm font-mono">
+                        <button type="button" onclick="verifyPlayerId()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-3 rounded-xl border border-slate-700 whitespace-nowrap transition">
+                            <i class="fa-solid fa-user-check mr-1"></i> Verificar
+                        </button>
+                    </div>
+                    <div id="verify-status" class="hidden mt-2 text-xs flex items-center gap-1.5 font-medium"></div>
+                </div>
+
+                <!-- STEP 2: SELECT PACKAGE -->
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+                        2. Selecciona el Paquete <span class="text-brand-magenta">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="package-selector">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="100 Diamantes / Puntos" data-price="1.99" checked class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition">
+                                <p class="text-xs text-slate-400 font-medium">Básico</p>
+                                <p class="text-sm font-extrabold text-white">100 Unidades</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$1.99 USD</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="310 + 31 Bonus" data-price="4.99" class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition relative">
+                                <span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded">+10% Bonus</span>
+                                <p class="text-xs text-slate-400 font-medium">Popular</p>
+                                <p class="text-sm font-extrabold text-white">310 + 31</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$4.99 USD</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="1,080 + 108 Bonus" data-price="11.99" class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition relative">
+                                <span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-brand-magenta text-white text-[9px] font-black px-1.5 py-0.2 rounded">Mejor Valor</span>
+                                <p class="text-xs text-slate-400 font-medium">Pro</p>
+                                <p class="text-sm font-extrabold text-white">1,080 + 108</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$11.99 USD</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="2,200 + 220 Bonus" data-price="22.50" class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition">
+                                <p class="text-xs text-slate-400 font-medium">Gamer</p>
+                                <p class="text-sm font-extrabold text-white">2,200 + 220</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$22.50 USD</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="Pase de Batalla Premium" data-price="9.99" class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition">
+                                <p class="text-xs text-slate-400 font-medium">Especial</p>
+                                <p class="text-sm font-extrabold text-amber-400">Pase Batalla</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$9.99 USD</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="package" value="5,600 + 560 Bonus" data-price="54.99" class="peer hidden" onchange="updatePriceSummary()">
+                            <div class="p-3 bg-slate-950 border border-slate-800 peer-checked:border-brand-cyan peer-checked:bg-brand-cyan/10 rounded-xl text-center transition">
+                                <p class="text-xs text-slate-400 font-medium">VIP Hardcore</p>
+                                <p class="text-sm font-extrabold text-white">5,600 + 560</p>
+                                <p class="text-xs font-bold text-brand-cyan mt-1">$54.99 USD</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- STEP 3: PAYMENT METHOD -->
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+                        3. Método de Pago <span class="text-brand-magenta">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="payment" value="Pago Móvil / Transferencia Local" checked class="peer hidden">
+                            <div class="p-2.5 bg-slate-950 border border-slate-800 peer-checked:border-emerald-400 peer-checked:bg-emerald-500/10 rounded-xl text-center transition">
+                                <p class="text-xs font-extrabold text-white">Pago Móvil / Bs</p>
+                                <p class="text-[10px] text-slate-400">Local Instantáneo</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="payment" value="Binance Pay / USDT" class="peer hidden">
+                            <div class="p-2.5 bg-slate-950 border border-slate-800 peer-checked:border-yellow-400 peer-checked:bg-yellow-500/10 rounded-xl text-center transition">
+                                <p class="text-xs font-extrabold text-amber-300">Binance Pay</p>
+                                <p class="text-[10px] text-slate-400">0% Comisión</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="payment" value="Zelle" class="peer hidden">
+                            <div class="p-2.5 bg-slate-950 border border-slate-800 peer-checked:border-purple-400 peer-checked:bg-purple-500/10 rounded-xl text-center transition">
+                                <p class="text-xs font-extrabold text-purple-300">Zelle</p>
+                                <p class="text-[10px] text-slate-400">USD Directo</p>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="payment" value="PayPal / Tarjetas" class="peer hidden">
+                            <div class="p-2.5 bg-slate-950 border border-slate-800 peer-checked:border-blue-400 peer-checked:bg-blue-500/10 rounded-xl text-center transition">
+                                <p class="text-xs font-extrabold text-blue-300">PayPal / Card</p>
+                                <p class="text-[10px] text-slate-400">Internacional</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ORDER SUMMARY & CHECKOUT BUTTON -->
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400">Monto Total Neto:</p>
+                        <p id="total-price-display" class="font-display font-black text-2xl text-brand-cyan">$1.99 USD</p>
+                    </div>
+                    <button type="submit" class="neon-glow-btn text-black font-extrabold text-xs uppercase px-7 py-3.5 rounded-xl">
+                        Completar Recarga <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- SUCCESS CONFIRMATION MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full rounded-3xl border border-emerald-500/30 p-6 text-center space-y-4 animate-slide-in">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-3xl mx-auto">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            
+            <h3 class="font-display font-extrabold text-2xl text-white">¡Orden Registrada!</h3>
+            <p class="text-slate-300 text-xs">Tu solicitud de recarga para <strong id="succ-game" class="text-brand-cyan">Game</strong> ha sido generada con éxito.</p>
+            
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-left text-xs space-y-2 font-mono">
+                <div class="flex justify-between"><span class="text-slate-500">Número de Orden:</span><span id="succ-id" class="text-white font-bold">ORB-000000</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">ID Jugador:</span><span id="succ-player" class="text-white">---</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Paquete:</span><span id="succ-pkg" class="text-emerald-400 font-bold">---</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Estado:</span><span class="text-amber-400 font-bold">⏳ Esperando Pago / Procesando</span></div>
+            </div>
+
+            <p class="text-[11px] text-slate-400">Para finalizar la acreditación instantánea, envía el capture de tu pago al soporte VIP WhatsApp.</p>
+
+            <div class="pt-2 flex gap-3">
+                <button onclick="closeSuccessModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-3 rounded-xl">
+                    Cerrar
+                </button>
+                <a id="whatsapp-checkout-link" href="#" target="_blank" class="w-1/2 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-3 rounded-xl flex items-center justify-center gap-1">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Pagar Vía WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-slate-800/80">
+                
+                <!-- Brand Info -->
+                <div class="md:col-span-5 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-brand-cyan flex items-center justify-center text-black font-bold text-lg">
+                            <i class="fa-solid fa-gamepad"></i>
+                        </div>
+                        <span class="font-display font-black text-xl tracking-wider text-white">
+                            RECARGAS <span class="text-brand-cyan">ORBET</span>
+                        </span>
+                    </div>
+                    <p class="text-slate-400 text-xs leading-relaxed max-w-sm">
+                        La plataforma de recargas de juegos online preferida por miles de gamers en Latinoamérica. Garantizamos velocidad, seguridad y los mejores precios del mercado 24 horas al día.
+                    </p>
+                    <div class="flex items-center gap-3 text-slate-400 text-lg">
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-brand-cyan transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-brand-cyan transition"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-brand-cyan transition"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-brand-cyan transition"><i class="fa-brands fa-discord"></i></a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="md:col-span-3">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-white mb-4">Juegos Populares</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#juegos" class="hover:text-brand-cyan transition">Recargar Free Fire Diamantes</a></li>
+                        <li><a href="#juegos" class="hover:text-brand-cyan transition">Mobile Legends Diamonds</a></li>
+                        <li><a href="#juegos" class="hover:text-brand-cyan transition">PUBG Mobile UC Global</a></li>
+                        <li><a href="#juegos" class="hover:text-brand-cyan transition">Roblox Robux Codes</a></li>
+                        <li><a href="#juegos" class="hover:text-brand-cyan transition">Tarjetas Steam Wallet</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal / Help -->
+                <div class="md:col-span-4 space-y-3">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-white mb-4">Métodos Aceptados</h4>
+                    <div class="flex flex-wrap gap-2 text-xs text-slate-300 font-medium">
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">Pago Móvil</span>
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">Binance Pay</span>
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">Zelle</span>
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">PayPal</span>
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">Visa / Mastercard</span>
+                        <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">USDT</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 pt-2">
+                        Aviso Legal: Todos los nombres de marcas, marcas registradas e imágenes pertenecen a sus respectivos propietarios (Garena, Tencent, Moonton, Roblox Corp, etc.).
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-4">
+                <p>© 2026 RECARGAS ORBET. Todos los derechos reservados.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-slate-400">Términos de Servicio</a>
+                    <a href="#" class="hover:text-slate-400">Política de Privacidad</a>
+                    <a href="#" class="hover:text-slate-400">Garantía de Entrega</a>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        // Mobile Drawer Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Ticker live simulation updates
+        const tickerContent = document.getElementById('ticker-content');
+        const simulatedTransactions = [
+            '<strong>Carlos M.</strong> recargó <span class="text-cyan-400 font-bold">1,080 + 108 Diamantes</span> en Free Fire <span class="text-slate-500">(Hace 12 segs)</span>',
+            '<strong>Valeria R.</strong> adquirió <span class="text-amber-400 font-bold">Pase de Batalla</span> en Mobile Legends <span class="text-slate-500">(Hace 45 segs)</span>',
+            '<strong>Kevin P.</strong> recargó <span class="text-emerald-400 font-bold">800 Robux</span> en Roblox <span class="text-slate-500">(Hace 1 min)</span>',
+            '<strong>Andrés S.</strong> compró <span class="text-purple-400 font-bold">Gift Card $20</span> en Steam Wallet <span class="text-slate-500">(Hace 2 mins)</span>'
+        ];
+        let tickerIdx = 0;
+        setInterval(() => {
+            tickerIdx = (tickerIdx + 1) % simulatedTransactions.length;
+            tickerContent.style.opacity = '0';
+            setTimeout(() => {
+                tickerContent.innerHTML = simulatedTransactions[tickerIdx];
+                tickerContent.style.opacity = '1';
+            }, 300);
+        }, 5000);
+
+        // Category Filter Logic
+        function filterCategory(cat) {
+            const cards = document.querySelectorAll('.game-card');
+            const btns = document.querySelectorAll('.cat-btn');
+
+            btns.forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+                btn.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-800');
+            });
+            event.target.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-800');
+            event.target.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
+
+            cards.forEach(card => {
+                const categories = card.getAttribute('data-category');
+                if (cat === 'all' || categories.includes(cat)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Live Search Input Handler
+        const searchInput = document.getElementById('game-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const cards = document.querySelectorAll('.game-card');
+                cards.forEach(card => {
+                    const name = card.getAttribute('data-name').toLowerCase();
+                    if (name.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function quickFilter(term) {
+            if (searchInput) {
+                searchInput.value = term;
+                searchInput.dispatchEvent(new Event('input'));
+                document.getElementById('juegos').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // FAQ Accordion Toggle
+        function toggleFaq(btn) {
+            const answer = btn.nextElementSibling;
+            const icon = btn.querySelector('i');
+            const isOpen = !answer.classList.contains('hidden');
+
+            document.querySelectorAll('.faq-answer').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#faq button i').forEach(i => i.style.transform = 'rotate(0deg)');
+
+            if (!isOpen) {
+                answer.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Modal Top-Up Flow Logic
+        let currentGameName = '';
+
+        function openTopUpModal(gameTitle, imgUrl) {
+            currentGameName = gameTitle;
+            document.getElementById('modal-game-title').innerText = gameTitle;
+            document.getElementById('modal-game-img').src = imgUrl;
+            document.getElementById('verify-status').classList.add('hidden');
+            document.getElementById('player-id').value = '';
+            document.getElementById('topup-modal').classList.remove('hidden');
+            updatePriceSummary();
+        }
+
+        function closeTopUpModal() {
+            document.getElementById('topup-modal').classList.add('hidden');
+        }
+
+        function verifyPlayerId() {
+            const idVal = document.getElementById('player-id').value.trim();
+            const statusEl = document.getElementById('verify-status');
+            statusEl.classList.remove('hidden');
+
+            if (idVal.length >= 5) {
+                statusEl.className = "mt-2 text-xs flex items-center gap-1.5 font-bold text-emerald-400";
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ID Encontrado: Jugador_Pro_' + idVal.slice(-3) + ' (Servidor Activo)';
+            } else {
+                statusEl.className = "mt-2 text-xs flex items-center gap-1.5 font-bold text-rose-400";
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> El ID ingresado debe tener al menos 5 dígitos.';
+            }
+        }
+
+        function updatePriceSummary() {
+            const selectedPackage = document.querySelector('input[name="package"]:checked');
+            if (selectedPackage) {
+                const price = selectedPackage.getAttribute('data-price');
+                document.getElementById('total-price-display').innerText = '$' + price + ' USD';
+            }
+        }
+
+        function processOrder(e) {
+            e.preventDefault();
+            const playerId = document.getElementById('player-id').value.trim();
+            const selectedPackage = document.querySelector('input[name="package"]:checked').value;
+            const selectedPayment = document.querySelector('input[name="payment"]:checked').value;
+            const orderId = 'ORB-' + Math.floor(100000 + Math.random() * 900000);
+
+            closeTopUpModal();
+
+            // Populate Success Modal
+            document.getElementById('succ-game').innerText = currentGameName;
+            document.getElementById('succ-id').innerText = orderId;
+            document.getElementById('succ-player').innerText = playerId;
+            document.getElementById('succ-pkg').innerText = selectedPackage;
+
+            // WhatsApp link generator with details
+            const waMsg = encodeURIComponent(`Hola Recargas Orbet! 👋 Acabo de generar un pedido:\n\n- *Orden:* ${orderId}\n- *Juego:* ${currentGameName}\n- *ID Jugador:* ${playerId}\n- *Paquete:* ${selectedPackage}\n- *Método de Pago:* ${selectedPayment}\n\nAdjunto comprobante para acreditación inmediata.`);
+            document.getElementById('whatsapp-checkout-link').href = `https://wa.me/?text=${waMsg}`;
+
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+        }
+
+        // Handle Order Status Checking Simulation
+        function handleTrackOrder(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('order-id-input').value.trim();
+            const resultBox = document.getElementById('order-result');
+
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
+                    <div>
+                        <p class="text-white font-bold">Orden ${inputVal.toUpperCase()} - <span class="text-emerald-400">Acreditada Exitosamente</span></p>
+                        <p class="text-xs text-slate-400 mt-0.5">Recarga entregada vía Servidor Automatizado Orbet v2.4 (Tiempo de procesamiento: 82 segs)</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
