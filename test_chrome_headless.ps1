@@ -23,18 +23,24 @@ if (-not $finished) {
         "2. Eliminación total del botón de navegación 'Importar'"             = (-not ($content -match 'data-view="view-import"'))
         "3. Sección principal 'view-play-safe' presente en el DOM"            = ($content -match 'id="view-play-safe"')
         "4. Carga del script 'js/play-safe-engine.js'"                         = ($content -match 'src="js/play-safe-engine.js"')
-        "5. Selector de operadoras de lotería (play-lottery-select)"          = ($content -match 'id="play-lottery-select"')
-        "6. Selector de turnos / horarios dinámicos (play-schedules-container)"= ($content -match 'id="play-schedules-container"')
-        "7. Campo para ingresar o buscar animalitos (play-number-input)"       = ($content -match 'id="play-number-input"')
-        "8. Modal catálogo completo de animalitos (animalitos-grid-modal)"     = ($content -match 'id="animalitos-grid-modal"')
-        "9. Contenedor de fichas/chips seleccionadas (play-selected-chips)"    = ($content -match 'id="play-selected-chips"')
-        "10. Campo de monto por número (play-amount-input)"                    = ($content -match 'id="play-amount-input"')
-        "11. Banner de monto total a cancelar en Bs (play-total-bs)"           = ($content -match 'id="play-total-bs"')
-        "12. Copiado 1-click de Pago Móvil (PaymentsAndWhatsApp.copyText)"     = ($content -match 'PaymentsAndWhatsApp\.copyText')
-        "13. Campo de número de referencia de pago (play-reference-input)"     = ($content -match 'id="play-reference-input"')
-        "14. Alerta para adjuntar captura de Pago Móvil (capture)"             = ($content -match 'capture')
-        "15. Botón de envío de ticket a WhatsApp (submitPlaySafeTicket)"       = ($content -match 'PlaySafeEngine\.submitPlaySafeTicket')
-        "16. Historial de tickets guardados (play-tickets-history)"            = ($content -match 'id="play-tickets-history"')
+        "5. Carga del script 'js/cloud-sync.js'"                               = ($content -match 'src="js/cloud-sync.js"')
+        "6. Selector de operadoras de lotería (play-lottery-select)"          = ($content -match 'id="play-lottery-select"')
+        "7. Selector de turnos / horarios dinámicos (play-schedules-container)"= ($content -match 'id="play-schedules-container"')
+        "8. Campo para ingresar o buscar animalitos (play-number-input)"       = ($content -match 'id="play-number-input"')
+        "9. Modal catálogo completo de animalitos (animalitos-grid-modal)"     = ($content -match 'id="animalitos-grid-modal"')
+        "10. Contenedor de fichas/chips seleccionadas (play-selected-chips)"   = ($content -match 'id="play-selected-chips"')
+        "11. Campo de monto por número (play-amount-input)"                    = ($content -match 'id="play-amount-input"')
+        "12. Botón rápido 50 Bs (mínimo oficial)"                             = ($content -match 'data-amount="50"')
+        "13. Botón rápido 500 Bs presente"                                     = ($content -match 'data-amount="500"')
+        "14. Botón rápido 1000 Bs presente"                                    = ($content -match 'data-amount="1000"')
+        "15. Botón rápido 20 Bs eliminado"                                     = (-not ($content -match 'data-amount="20"'))
+        "16. Banner de monto total a cancelar en Bs (play-total-bs)"           = ($content -match 'id="play-total-bs"')
+        "17. Copiado 1-click de Pago Móvil (PaymentsAndWhatsApp.copyText)"     = ($content -match 'PaymentsAndWhatsApp\.copyText')
+        "18. Campo de número de referencia de pago (play-reference-input)"     = ($content -match 'id="play-reference-input"')
+        "19. Alerta para adjuntar captura de Pago Móvil (capture)"             = ($content -match 'capture')
+        "20. Botón de envío de ticket a WhatsApp (submitPlaySafeTicket)"       = ($content -match 'PlaySafeEngine\.submitPlaySafeTicket')
+        "21. Historial de tickets guardados (play-tickets-history)"            = ($content -match 'id="play-tickets-history"')
+        "22. Sección de Sincronización en la Nube en Ajustes"                 = ($content -match 'app_cloud_data\.json')
     }
 
     $allPassed = $true
@@ -45,7 +51,7 @@ if (-not $finished) {
 
     Write-Host ""
     if ($allPassed) {
-        Write-Host ">>> TODOS LOS 16 CHEQUEOS PASARON EXITOSAMENTE EN GOOGLE CHROME <<<" -ForegroundColor Green
+        Write-Host ">>> TODOS LOS 22 CHEQUEOS PASARON EXITOSAMENTE EN GOOGLE CHROME <<<" -ForegroundColor Green
     } else {
         Write-Host ">>> ALGUNOS CHEQUEOS FALLARON <<<" -ForegroundColor Red
     }

@@ -1,0 +1,65 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-09-21T05:20:00.000Z",
+  "updatedBy": "admin",
+  "settings": {
+    "whatsapp": {
+      "phone": "+584247848287",
+      "message": "¡Hola Datos Orbet! Deseo adquirir sus servicios y suscripción VIP de la suerte."
+    },
+    "whatsappNumber": "+584247848287",
+    "payments": {
+      "pagoMovil": {
+        "bank": "Banco de Venezuela (0102)",
+        "phone": "0424-7848287",
+        "ci": "V-17.273.190",
+        "idCard": "V-17.273.190",
+        "holder": "Orbet Suerte VIP"
+      },
+      "bancoBolivares": {
+        "bank": "Banesco",
+        "accountNumber": "0134-0000-00-0000000000",
+        "holder": "Orbet Suerte VIP"
+      },
+      "bancolombia": {
+        "accountNumber": "08862783477 - 1091375151",
+        "accountType": "Ahorros",
+        "holder": "Orbet Servicios de Suerte",
+        "nequi": "312-3456789"
+      },
+      "zelle": {
+        "email": "pagos.datosorbet@gmail.com",
+        "holder": "Orbet Inversiones LLC"
+      },
+      "binance": {
+        "payId": "298371928",
+        "usdtWallet": "TQx9A7V3pL8... (TRC20 Red Tron)",
+        "bep20Wallet": "0x71C... (BSC Red Binance)"
+      }
+    }
+  },
+  "users": [
+    {
+      "id": "usr_admin_master",
+      "username": "admin",
+      "password": "orbet2026",
+      "name": "Administrador Principal",
+      "role": "admin",
+      "status": "active",
+      "expiresAt": "2099-12-31",
+      "registeredIp": null,
+      "createdAt": "2026-09-01"
+    },
+    {
+      "id": "usr_jesus_vip",
+      "username": "JESUS",
+      "password": "12345",
+      "name": "JESUS / RECEPTOR",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-10-21",
+      "registeredIp": null,
+      "createdAt": "2026-09-21"
+    }
+  ]
+}

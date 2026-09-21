@@ -34,13 +34,13 @@
         <form id="auth-form" onsubmit="handleAuthSubmit(event)">
           <div class="auth-field">
             <label for="auth-username">Usuario:</label>
-            <input type="text" id="auth-username" class="auth-input" placeholder="Usuario" value="admin" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="text" id="auth-username" class="auth-input" placeholder="Ingrese su Usuario VIP" value="" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
           </div>
           
           <div class="auth-field">
             <label for="auth-password">Contraseña:</label>
             <div class="password-input-wrapper">
-              <input type="password" id="auth-password" class="auth-input" placeholder="Contraseña" value="orbet2026" required autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
+              <input type="password" id="auth-password" class="auth-input" placeholder="Ingrese su Contraseña" value="" required autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
               <button type="button" id="toggle-pass-btn" class="toggle-pass-btn" onclick="AuthManager.togglePasswordVisibility()" title="Mostrar u ocultar contraseña">👁️</button>
             </div>
           </div>
@@ -57,9 +57,15 @@
             <span>Ingresar a Datos Orbet</span> ➔
           </button>
           
-          <div class="auth-hint">
-            <span>🔑 Credenciales por defecto:</span>
-            <strong>Usuario:</strong> admin &nbsp;|&nbsp; <strong>Clave:</strong> orbet2026
+          <!-- Botón de Solicitud de Acceso / Pagos VIP por WhatsApp -->
+          <div class="auth-vip-cta-box">
+            <button type="button" class="auth-wa-btn" onclick="openWhatsAppSubscriptionRequest()">
+              <span class="auth-wa-btn-icon">💬</span>
+              <div class="auth-wa-btn-text">
+                <strong>¿No tienes cuenta VIP?</strong>
+                <span>Solicita información y métodos de pago por WhatsApp</span>
+              </div>
+            </button>
           </div>
         </form>
       </div>
@@ -898,6 +904,27 @@
             </button>
           </div>
 
+          <!-- SECCIÓN 3: SINCRONIZACIÓN EN LA NUBE (MULTI-DISPOSITIVO / GITHUB) -->
+          <div class="settings-section-card" style="margin-top: 14px; border: 1.5px solid #0284c7; background: #f0f9ff;">
+            <div class="settings-section-header">
+              <h4 style="color: #0369a1;">☁️ Sincronización en la Nube (Multi-Dispositivo)</h4>
+            </div>
+            <p style="font-size: 0.78rem; color: #334155; margin-bottom: 10px;">
+              Los teléfonos y otros dispositivos leen la información desde GitHub Pages. Puedes generar el archivo central con 1 clic:
+            </p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-create-user" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); flex: 1;" onclick="CloudSync.downloadCloudDataFile()">
+                📥 Descargar Respaldo Nube (app_cloud_data.json)
+              </button>
+              <button type="button" class="btn-create-user" style="background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; flex: 1;" onclick="CloudSync.copyCloudDataJson()">
+                📋 Copiar JSON de Nube
+              </button>
+            </div>
+            <p style="font-size: 0.73rem; color: #64748b; margin-top: 8px;">
+              💡 <em>Al subir o reemplazar el archivo <code>app_cloud_data.json</code> en la carpeta <code>data/</code> de su repositorio GitHub, todos los teléfonos recibirán los nuevos usuarios y cuentas bancarias al instante.</em>
+            </p>
+          </div>
+
           <div style="margin-top: 16px;">
             <button type="button" class="apply-range-btn" style="background: #ef4444;" onclick="AuthManager.logout()">
               🚪 Cerrar Sesión
@@ -972,6 +999,7 @@
   <script src="js/lotteriesConfig.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/lotteries-data.js"></script>
+  <script src="js/cloud-sync.js"></script>
   <script src="js/stats-engine.js"></script>
   <script src="js/pyramid-engine.js"></script>
   <script src="js/juegoActivoEngine.js"></script>

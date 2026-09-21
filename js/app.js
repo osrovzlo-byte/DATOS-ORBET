@@ -17,6 +17,11 @@ let currentPyramidMode = 'dia_actual';
 // INICIALIZACIÓN
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Inicializar sincronización en la nube (CloudSync)
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.init();
+  }
+
   // 1. Inicializar autenticación y pantalla de acceso
   if (typeof AuthManager !== 'undefined') {
     AuthManager.initUI();

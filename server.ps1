@@ -1,22 +1,27 @@
-# Servidor local de desarrollo para Datos Orbet con Proxy CORS integrado
-param([int]$Port = 8080)
+param(
+    [int]$Port = 8080,
+    [switch]$OpenBrowser = $false
+)
 
 $directory = $PSScriptRoot
 $listener = New-Object System.Net.HttpListener
-$prefix = "http://*:$Port/"
+
+$localIPs = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' -and $_.IPAddress -notmatch '^169\.' }).IPAddress
 
 try {
     $listener.Prefixes.Add("http://localhost:$Port/")
     $listener.Prefixes.Add("http://127.0.0.1:$Port/")
+    if ($localIPs) {
+        foreach ($ip in $localIPs) {
+            try { $listener.Prefixes.Add("http://${ip}:$Port/") } catch {}
+        }
+    }
     $listener.Start()
 } catch {
-    # Fallback to localhost only if permissions restrict wildcard
     $listener = New-Object System.Net.HttpListener
     $listener.Prefixes.Add("http://localhost:$Port/")
     $listener.Start()
 }
-
-$localIPs = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' -and $_.IPAddress -notmatch '^169\.' }).IPAddress
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "  DATOS ORBET - LA APP DE LA SUERTE" -ForegroundColor Yellow
@@ -38,8 +43,9 @@ Write-Host ""
 Write-Host "Presione Ctrl + C en esta ventana para detener el servidor." -ForegroundColor Gray
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# Abrir en el navegador
-Start-Process "http://localhost:$Port/"
+if ($OpenBrowser) {
+    Start-Process "http://localhost:$Port/"
+}
 
 while ($listener.IsListening) {
     try {

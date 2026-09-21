@@ -1539,14 +1539,60 @@ body {
 }
 
 .auth-hint {
+  display: none !important;
+}
+
+.auth-vip-cta-box {
   margin-top: 14px;
-  text-align: center;
-  font-size: calc(0.72rem * var(--font-scale));
-  color: #64748b;
-  background: #f8fafc;
+  width: 100%;
+}
+
+.auth-wa-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border: none;
   border-radius: var(--radius-sm);
-  padding: 8px;
-  border: 1px dashed #cbd5e1;
+  padding: 11px 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.auth-wa-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.auth-wa-btn:active {
+  transform: scale(0.98);
+}
+
+.auth-wa-btn-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.auth-wa-btn-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-wa-btn-text strong {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.auth-wa-btn-text span {
+  font-size: 0.72rem;
+  color: #d1fae5;
+  font-weight: 500;
 }
 
 /* ==========================================================================

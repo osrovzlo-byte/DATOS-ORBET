@@ -530,16 +530,16 @@ class DatosOrbetDB {
 
     const defaultSettings = {
       whatsapp: {
-        phone: '+584121234567',
+        phone: '+584247848287',
         message: '¡Hola Datos Orbet! Deseo adquirir sus servicios y suscripción VIP de la suerte.'
       },
-      whatsappNumber: '+584121234567',
+      whatsappNumber: '+584247848287',
       payments: {
         pagoMovil: {
           bank: 'Banco de Venezuela (0102)',
-          phone: '0412-1234567',
-          ci: 'V-20123456',
-          idCard: 'V-20123456',
+          phone: '0424-7848287',
+          ci: 'V-17.273.190',
+          idCard: 'V-17.273.190',
           holder: 'Orbet Suerte VIP'
         },
         bancoBolivares: {
@@ -548,7 +548,7 @@ class DatosOrbetDB {
           holder: 'Orbet Suerte VIP'
         },
         bancolombia: {
-          accountNumber: '123-456789-00',
+          accountNumber: '08862783477 - 1091375151',
           accountType: 'Ahorros',
           holder: 'Orbet Servicios de Suerte',
           nequi: '312-3456789'
@@ -569,6 +569,25 @@ class DatosOrbetDB {
     if (!parsed) {
       this.saveSettings(defaultSettings);
       return defaultSettings;
+    }
+
+    // Migración automática de valores ficticios antiguos a los datos bancarios reales
+    if (parsed.payments && parsed.payments.pagoMovil) {
+      if (parsed.payments.pagoMovil.phone === '0412-1234567') {
+        parsed.payments.pagoMovil.phone = '0424-7848287';
+      }
+      if (parsed.payments.pagoMovil.ci === 'V-20123456' || parsed.payments.pagoMovil.ci === 'V-20.123.456') {
+        parsed.payments.pagoMovil.ci = 'V-17.273.190';
+      }
+    }
+    if (parsed.payments && parsed.payments.bancolombia) {
+      if (parsed.payments.bancolombia.accountNumber === '123-456789-00') {
+        parsed.payments.bancolombia.accountNumber = '08862783477 - 1091375151';
+      }
+    }
+    if (parsed.whatsapp && parsed.whatsapp.phone === '+584121234567') {
+      parsed.whatsapp.phone = '+584247848287';
+      parsed.whatsappNumber = '+584247848287';
     }
 
     // Asegurar estructura completa combinando con valores por defecto

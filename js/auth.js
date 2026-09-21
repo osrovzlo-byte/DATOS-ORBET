@@ -7,9 +7,70 @@ class AuthManager {
   static SESSION_KEY = 'datos_orbet_auth_session_v1';
   static CREDENTIALS_KEY = 'datos_orbet_credentials_v1';
   static USERS_KEY = 'datos_orbet_users_v2';
+  static DELETED_USERS_KEY = 'datos_orbet_deleted_users_v1';
   static DEVICE_KEY = 'datos_orbet_device_v1';
   static cachedIp = null;
   static ipFetchPromise = null;
+
+  /**
+   * Normaliza cadenas para comparación insensible a mayúsculas, minúsculas, acentos y espacios
+   */
+  static normalizeText(str) {
+    return String(str || '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+  }
+
+  /**
+   * Obtiene la lista de nombres de usuarios eliminados explícitamente para evitar su re-creación automática
+   */
+  static getDeletedUsers() {
+    try {
+      const raw = localStorage.getItem(this.DELETED_USERS_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /**
+   * Registra un usuario en la lista de eliminados permanentes
+   */
+  static addDeletedUser(username) {
+    const norm = this.normalizeText(username);
+    if (!norm || norm === 'admin') return;
+    const deleted = this.getDeletedUsers();
+    if (!deleted.includes(norm)) {
+      deleted.push(norm);
+      localStorage.setItem(this.DELETED_USERS_KEY, JSON.stringify(deleted));
+    }
+  }
+
+  /**
+   * Remueve un usuario de la lista de eliminados si el administrador decide crearlo de nuevo
+   */
+  static unmarkDeletedUser(username) {
+    const norm = this.normalizeText(username);
+    if (!norm) return;
+    const deleted = this.getDeletedUsers().filter(n => n !== norm);
+    localStorage.setItem(this.DELETED_USERS_KEY, JSON.stringify(deleted));
+  }
+
+  /**
+   * Obtiene la sesión actual
+   */
+  static getCurrentUser() {
+    const raw = localStorage.getItem(this.SESSION_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
 
   /**
    * Obtiene la fecha actual en formato YYYY-MM-DD
@@ -48,44 +109,47 @@ class AuthManager {
   }
 
   /**
-   * Detecta la IP pública del usuario con timeout y respaldo seguro
+   * Detecta la IP pública del usuario con timeout rápido y respaldo seguro
    */
   static async getClientIP() {
     if (this.cachedIp) return this.cachedIp;
     if (this.ipFetchPromise) return this.ipFetchPromise;
 
     this.ipFetchPromise = (async () => {
-      // 1. Intentar ipify.org con timeout de 2.5s
+      // Función auxiliar con timeout rápido (1800ms)
+      const fetchFastIp = async (url, jsonKey = 'ip') => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1800);
+          const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data[jsonKey]) {
+              return String(data[jsonKey]).trim();
+            }
+          }
+        } catch (_) {}
+        return null;
+      };
+
+      // Consultar múltiples proveedores en paralelo para máxima velocidad en redes móviles
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.ip) {
-            this.cachedIp = String(data.ip).trim();
+        const ipResults = await Promise.allSettled([
+          fetchFastIp('https://api.ipify.org?format=json', 'ip'),
+          fetchFastIp('https://api64.ipify.org?format=json', 'ip'),
+          fetchFastIp('https://api.ip.sb/jsonip', 'ip')
+        ]);
+
+        for (const r of ipResults) {
+          if (r.status === 'fulfilled' && r.value) {
+            this.cachedIp = r.value;
             return this.cachedIp;
           }
         }
       } catch (_) {}
 
-      // 2. Respaldo: ip.sb
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        const res = await fetch('https://api.ip.sb/jsonip', { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.ip) {
-            this.cachedIp = String(data.ip).trim();
-            return this.cachedIp;
-          }
-        }
-      } catch (_) {}
-
-      // 3. Respaldo local si no hay conexión a internet o los servidores de IP fallan
+      // Respaldo de red/dispositivo seguro si no hay internet o fallan los endpoints de IP
       const fallbackId = 'DISP-' + this.getDeviceIdentifier().substring(0, 12);
       this.cachedIp = fallbackId;
       return fallbackId;
@@ -118,7 +182,7 @@ class AuthManager {
 
     users.forEach(user => {
       // La cuenta maestra de administrador nunca vence
-      if (user.username.toLowerCase() === 'admin' || user.role === 'admin') {
+      if (this.normalizeText(user.username) === 'admin' || user.role === 'admin') {
         return;
       }
 
@@ -145,12 +209,41 @@ class AuthManager {
   }
 
   /**
+   * Usuarios iniciales del sistema
+   */
+  static INITIAL_DEFAULT_USERS = [
+    {
+      id: 'usr_admin_master',
+      username: 'admin',
+      password: 'orbet2026',
+      name: 'Administrador Principal',
+      role: 'admin',
+      status: 'active',
+      expiresAt: '2099-12-31',
+      registeredIp: null,
+      createdAt: '2026-09-01'
+    },
+    {
+      id: 'usr_jesus_vip',
+      username: 'JESUS',
+      password: '12345',
+      name: 'JESUS / RECEPTOR',
+      role: 'vip',
+      status: 'active',
+      expiresAt: '2026-10-21',
+      registeredIp: null,
+      createdAt: '2026-09-21'
+    }
+  ];
+
+  /**
    * Obtiene la lista completa de usuarios VIP y administradores
    */
   static getUsers() {
     this.checkExpirations();
 
     const raw = localStorage.getItem(this.USERS_KEY);
+    const deletedUsers = this.getDeletedUsers();
     let users = [];
     if (raw) {
       try {
@@ -161,36 +254,27 @@ class AuthManager {
     }
 
     if (!Array.isArray(users) || users.length === 0) {
-      users = [
-        {
-          id: 'usr_admin_master',
-          username: 'admin',
-          password: 'orbet2026',
-          name: 'Administrador Principal',
-          role: 'admin',
-          status: 'active',
-          expiresAt: '2099-12-31',
-          registeredIp: null,
-          createdAt: '2026-09-01'
-        }
-      ];
+      // Filtrar aquellos que hayan sido eliminados explícitamente
+      users = this.INITIAL_DEFAULT_USERS
+        .filter(defUser => !deletedUsers.includes(this.normalizeText(defUser.username)))
+        .map(u => ({ ...u }));
       this.saveUsers(users);
+      return users;
     }
 
-    // Asegurarse de que el admin maestro siempre exista
-    const hasAdmin = users.some(u => u.username.toLowerCase() === 'admin');
+    // Filtrar usuarios borrados que pudieran haber quedado en la lista por error
+    if (deletedUsers.length > 0) {
+      const filtered = users.filter(u => !deletedUsers.includes(this.normalizeText(u.username)));
+      if (filtered.length !== users.length) {
+        users = filtered;
+        this.saveUsers(users);
+      }
+    }
+
+    // Asegurar que el usuario maestro admin siempre exista
+    const hasAdmin = users.some(u => this.normalizeText(u.username) === 'admin');
     if (!hasAdmin) {
-      users.unshift({
-        id: 'usr_admin_master',
-        username: 'admin',
-        password: 'orbet2026',
-        name: 'Administrador Principal',
-        role: 'admin',
-        status: 'active',
-        expiresAt: '2099-12-31',
-        registeredIp: null,
-        createdAt: '2026-09-01'
-      });
+      users.unshift({ ...this.INITIAL_DEFAULT_USERS[0] });
       this.saveUsers(users);
     }
 
@@ -221,11 +305,15 @@ class AuthManager {
       return { success: false, message: 'El usuario debe tener al menos 3 caracteres.' };
     }
 
+    const norm = this.normalizeText(cleanUser);
     const users = this.getUsers();
-    const exists = users.some(u => u.username.toLowerCase() === cleanUser.toLowerCase());
+    const exists = users.some(u => this.normalizeText(u.username) === norm);
     if (exists) {
       return { success: false, message: `El usuario "${cleanUser}" ya existe. Elija otro nombre.` };
     }
+
+    // Si había sido eliminado anteriormente, rehabilitar en lista de eliminados
+    this.unmarkDeletedUser(cleanUser);
 
     // Por defecto 30 días de suscripción si no se especifica
     const expiryDate = expiresAt || this.addDaysToDate(this.getTodayDateStr(), 30);
@@ -254,18 +342,22 @@ class AuthManager {
   }
 
   /**
-   * Elimina un usuario (excepto el administrador principal)
+   * Elimina un usuario (excepto el administrador principal) permanentemente
    */
   static deleteUser(userId) {
     let users = this.getUsers();
-    const target = users.find(u => u.id === userId || u.username.toLowerCase() === String(userId).toLowerCase());
+    const normTarget = this.normalizeText(userId);
+    const target = users.find(u => u.id === userId || this.normalizeText(u.username) === normTarget);
     if (!target) {
       return { success: false, message: 'Usuario no encontrado.' };
     }
 
-    if (target.username.toLowerCase() === 'admin' || target.id === 'usr_admin_master') {
+    if (this.normalizeText(target.username) === 'admin' || target.id === 'usr_admin_master') {
       return { success: false, message: 'No se puede eliminar el usuario Administrador Principal.' };
     }
+
+    // Registrar en la lista de eliminados para que no vuelva a regenerarse
+    this.addDeletedUser(target.username);
 
     users = users.filter(u => u.id !== target.id);
     this.saveUsers(users);
@@ -459,15 +551,19 @@ class AuthManager {
       };
     }
 
-    // Comprobación de superusuario maestro admin (siempre tiene acceso sin restricción de IP)
-    const isMasterAdmin = (cleanUser.toLowerCase() === 'admin' && cleanPass === 'orbet2026');
+    const normInput = this.normalizeText(cleanUser);
 
-    // 2. Buscar en el registro de usuarios
+    // Comprobación de superusuario maestro admin (siempre tiene acceso sin restricción de IP)
+    const isMasterAdmin = (normInput === 'admin' && cleanPass === 'orbet2026');
+
+    // 2. Buscar en el registro de usuarios con tolerancia de mayúsculas/minúsculas y acentos
     const users = this.getUsers();
-    const matchedUser = users.find(u => u.username.toLowerCase() === cleanUser.toLowerCase());
+    const matchedUser = users.find(u => this.normalizeText(u.username) === normInput);
 
     if (matchedUser) {
-      const isPasswordCorrect = (matchedUser.password === cleanPass || (matchedUser.username.toLowerCase() === 'admin' && isMasterAdmin));
+      // Comparar contraseñas limpias
+      const storedPass = String(matchedUser.password || '').trim();
+      const isPasswordCorrect = (storedPass === cleanPass || (this.normalizeText(matchedUser.username) === 'admin' && isMasterAdmin));
 
       if (!isPasswordCorrect) {
         return { 
@@ -497,8 +593,8 @@ class AuthManager {
       }
 
       // 3. Validación de IP ÚNICA (Anti-compartición de cuenta para usuarios VIP)
-      if (matchedUser.role !== 'admin' && matchedUser.username.toLowerCase() !== 'admin') {
-        const detectedIp = clientIp || this.cachedIp || 'DISP-' + this.getDeviceIdentifier().substring(0, 12);
+      if (matchedUser.role !== 'admin' && this.normalizeText(matchedUser.username) !== 'admin') {
+        const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
 
         if (!matchedUser.registeredIp) {
           // Primer inicio de sesión: se vincula a esta IP/dispositivo automáticamente
@@ -681,11 +777,13 @@ async function handleAuthSubmit(event) {
       // Mostrar alerta con información detallada y botón directo de WhatsApp si procede
       if (errorMsg) {
         // Obtener teléfono de WhatsApp oficial configurado en la app
-        let adminPhone = '+584121234567';
+        let adminPhone = '+584247848287';
         if (typeof DatosOrbetDB !== 'undefined' && DatosOrbetDB.getSettings) {
           const cfg = DatosOrbetDB.getSettings();
           if (cfg && cfg.whatsapp && cfg.whatsapp.phone) {
             adminPhone = cfg.whatsapp.phone;
+          } else if (cfg && cfg.whatsappNumber) {
+            adminPhone = cfg.whatsappNumber;
           }
         }
         const cleanPhone = adminPhone.replace(/[^0-9]/g, '');
@@ -730,6 +828,25 @@ async function handleAuthSubmit(event) {
   }
 }
 
+/**
+ * Redirige al WhatsApp del Administrador solicitando información para realizar pagos y activar cuenta VIP
+ */
+function openWhatsAppSubscriptionRequest() {
+  let adminPhone = '+584247848287';
+  if (typeof DatosOrbetDB !== 'undefined' && DatosOrbetDB.getSettings) {
+    const cfg = DatosOrbetDB.getSettings();
+    if (cfg && cfg.whatsapp && cfg.whatsapp.phone) {
+      adminPhone = cfg.whatsapp.phone;
+    } else if (cfg && cfg.whatsappNumber) {
+      adminPhone = cfg.whatsappNumber;
+    }
+  }
+  const cleanPhone = adminPhone.replace(/[^0-9]/g, '');
+  const msg = `¡Hola Datos Orbet! Deseo solicitar información sobre la suscripción VIP, precios y los datos de Pago Móvil / Transferencia para realizar el pago y activar mi cuenta en la aplicación.`;
+  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+}
+
 // Inicializar listeners tan pronto cargue el DOM
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -750,7 +867,8 @@ if (typeof document !== 'undefined') {
 if (typeof window !== 'undefined') {
   window.AuthManager = AuthManager;
   window.handleAuthSubmit = handleAuthSubmit;
+  window.openWhatsAppSubscriptionRequest = openWhatsAppSubscriptionRequest;
 }
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { AuthManager, handleAuthSubmit };
+  module.exports = { AuthManager, handleAuthSubmit, openWhatsAppSubscriptionRequest };
 }
