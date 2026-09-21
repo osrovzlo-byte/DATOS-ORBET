@@ -1,0 +1,75 @@
+/* ==========================================================================
+   DATOS ORBET - AJUSTES RESPONSIVOS Y DISPOSITIVOS MÓVILES ANDROID
+   ========================================================================== */
+
+/* Ajuste de Áreas Seguras de Teléfonos Modernos (Notch / Barra de gestos) */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app-header {
+    padding-top: calc(14px + env(safe-area-inset-top));
+  }
+  .bottom-nav {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+  .app-container {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Pantallas pequeñas de teléfonos (menos de 380px de ancho) */
+@media (max-width: 380px) {
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+  .brand-text h1 {
+    font-size: 1.1rem;
+  }
+  .brand-slogan {
+    font-size: 0.7rem;
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .pyramid-brick {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+  }
+  .draw-number-badge {
+    font-size: 1.15rem;
+    padding: 6px 12px;
+  }
+  .predictions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Pantallas medianas y grandes (Tablets / Desktop) */
+@media (min-width: 768px) {
+  body {
+    background: radial-gradient(circle at top, #0f2b54 0%, #06182e 100%);
+    padding: 24px 0;
+  }
+  .app-container {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    min-height: 92vh;
+    border: 3px solid var(--color-azul-claro-suave);
+  }
+  .bottom-nav {
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+  }
+}
+
+/* Modo de impresión / Guardar comprobante */
+@media print {
+  .app-header, .bottom-nav, .wa-floating-btn, .sync-now-btn, .font-size-ctrl {
+    display: none !important;
+  }
+  .app-container {
+    max-width: 100%;
+    box-shadow: none;
+    padding-bottom: 0;
+  }
+}
