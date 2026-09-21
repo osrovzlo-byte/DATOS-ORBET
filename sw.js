@@ -1,16 +1,19 @@
 // Service Worker - Datos Orbet, la app de la suerte
-const CACHE_NAME = 'datos-orbet-v1';
+const CACHE_NAME = 'datos-orbet-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/styles.css',
   './css/responsive.css',
-  './js/app.js',
+  './js/lotteriesConfig.js',
+  './js/auth.js',
   './js/lotteries-data.js',
   './js/stats-engine.js',
   './js/pyramid-engine.js',
+  './js/juegoActivoEngine.js',
   './js/importer.js',
   './js/payments-wa.js',
+  './js/app.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
