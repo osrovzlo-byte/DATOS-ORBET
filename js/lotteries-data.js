@@ -66,8 +66,14 @@ const SIGNOS_ZODIACALES = [
 const CANONICAL_NAMES_MAP = {};
 ANIMALITOS_75_LIST.forEach(item => {
   CANONICAL_NAMES_MAP[item.num] = item.name;
-  CANONICAL_NAMES_MAP[parseInt(item.num, 10)] = item.name;
+  if (item.num !== '00' && item.num !== '0') {
+    CANONICAL_NAMES_MAP[parseInt(item.num, 10)] = item.name;
+  }
 });
+// Diferenciación estricta e inequívoca: 0 es Delfín, 00 es Ballena
+CANONICAL_NAMES_MAP['0'] = 'Delfín';
+CANONICAL_NAMES_MAP['00'] = 'Ballena';
+
 
 /**
  * Realiza una consulta HTTP hacia la URL oficial pasando por una cascada de proxies CORS
@@ -513,45 +519,98 @@ class DatosOrbetDB {
 
   static getSettings() {
     const raw = localStorage.getItem(this.SETTINGS_KEY);
-    if (!raw) {
-      const defaultSettings = {
-        whatsappNumber: '+584121234567',
-        paymentMethods: {
-          pagoMovil: {
-            bank: 'Banco de Venezuela (0102)',
-            phone: '0412-1234567',
-            idCard: 'V-20123456',
-            holder: 'Orbet Suerte VIP'
-          },
-          bancolombia: {
-            accountNumber: '123-456789-00',
-            accountType: 'Ahorros',
-            holder: 'Orbet Servicios de Suerte',
-            nequi: '312-3456789'
-          },
-          zelle: {
-            email: 'pagos.datosorbet@gmail.com',
-            holder: 'Orbet Inversiones LLC'
-          },
-          binance: {
-            payId: '298371928',
-            usdtWallet: 'TQx9A7V3pL8... (TRC20 Red Tron)',
-            bep20Wallet: '0x71C... (BSC Red Binance)'
-          }
+    let parsed = null;
+    if (raw) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        parsed = null;
+      }
+    }
+
+    const defaultSettings = {
+      whatsapp: {
+        phone: '+584121234567',
+        message: '¡Hola Datos Orbet! Deseo adquirir sus servicios y suscripción VIP de la suerte.'
+      },
+      whatsappNumber: '+584121234567',
+      payments: {
+        pagoMovil: {
+          bank: 'Banco de Venezuela (0102)',
+          phone: '0412-1234567',
+          ci: 'V-20123456',
+          idCard: 'V-20123456',
+          holder: 'Orbet Suerte VIP'
         },
-        fontSize: 'normal'
-      };
+        bancoBolivares: {
+          bank: 'Banesco',
+          accountNumber: '0134-0000-00-0000000000',
+          holder: 'Orbet Suerte VIP'
+        },
+        bancolombia: {
+          accountNumber: '123-456789-00',
+          accountType: 'Ahorros',
+          holder: 'Orbet Servicios de Suerte',
+          nequi: '312-3456789'
+        },
+        zelle: {
+          email: 'pagos.datosorbet@gmail.com',
+          holder: 'Orbet Inversiones LLC'
+        },
+        binance: {
+          payId: '298371928',
+          usdtWallet: 'TQx9A7V3pL8... (TRC20 Red Tron)',
+          bep20Wallet: '0x71C... (BSC Red Binance)'
+        }
+      },
+      fontSize: 'normal'
+    };
+
+    if (!parsed) {
       this.saveSettings(defaultSettings);
       return defaultSettings;
     }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
+
+    // Asegurar estructura completa combinando con valores por defecto
+    const s = {
+      ...defaultSettings,
+      ...parsed,
+      whatsapp: {
+        ...defaultSettings.whatsapp,
+        ...(parsed.whatsapp || {}),
+        phone: (parsed.whatsapp && parsed.whatsapp.phone) || parsed.whatsappNumber || defaultSettings.whatsapp.phone
+      },
+      payments: {
+        ...defaultSettings.payments,
+        ...(parsed.payments || {}),
+        pagoMovil: {
+          ...defaultSettings.payments.pagoMovil,
+          ...(parsed.payments && parsed.payments.pagoMovil ? parsed.payments.pagoMovil : {})
+        },
+        bancoBolivares: {
+          ...defaultSettings.payments.bancoBolivares,
+          ...(parsed.payments && parsed.payments.bancoBolivares ? parsed.payments.bancoBolivares : {})
+        },
+        bancolombia: {
+          ...defaultSettings.payments.bancolombia,
+          ...(parsed.payments && parsed.payments.bancolombia ? parsed.payments.bancolombia : {})
+        },
+        zelle: {
+          ...defaultSettings.payments.zelle,
+          ...(parsed.payments && parsed.payments.zelle ? parsed.payments.zelle : {})
+        },
+        binance: {
+          ...defaultSettings.payments.binance,
+          ...(parsed.payments && parsed.payments.binance ? parsed.payments.binance : {})
+        }
+      }
+    };
+
+    return s;
   }
 
   static saveSettings(settings) {
+    if (!settings) return;
     localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(settings));
   }
 }

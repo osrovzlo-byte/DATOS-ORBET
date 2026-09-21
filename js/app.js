@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 9. Inicializar Pull-to-Refresh y sincronización horaria
   initPullToRefresh();
   setupHourlyAutoRefresh();
+
+  // 10. Inicializar motor Juega y Cobra Seguro
+  if (typeof PlaySafeEngine !== 'undefined') {
+    PlaySafeEngine.init();
+  }
 });
 
 function registerServiceWorker() {
@@ -71,44 +76,8 @@ function registerServiceWorker() {
 }
 
 // ==========================================================================
-// MANEJO DE AUTENTICACIÓN (LOGIN)
+// NOTA: La autenticación y gestión VIP se controlan desde js/auth.js
 // ==========================================================================
-function handleAuthSubmit(event) {
-  if (event) event.preventDefault();
-  const userEl = document.getElementById('auth-username');
-  const passEl = document.getElementById('auth-password');
-  const remEl = document.getElementById('auth-remember');
-  const errorMsg = document.getElementById('auth-error-msg');
-
-  const username = userEl ? userEl.value : '';
-  const password = passEl ? passEl.value : '';
-  const remember = remEl ? remEl.checked : true;
-
-  const res = AuthManager.login(username, password, remember);
-  if (res.success) {
-    if (errorMsg) errorMsg.style.display = 'none';
-    const overlay = document.getElementById('auth-overlay');
-    if (overlay) {
-      overlay.classList.add('hidden');
-      overlay.style.display = 'none';
-    }
-    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
-      PaymentsAndWhatsApp.showToast('¡Bienvenido a Datos Orbet!');
-    }
-    if (typeof renderLotteryView === 'function') {
-      try {
-        renderLotteryView();
-      } catch (err) {
-        console.warn('Error no bloqueante al renderizar vista:', err);
-      }
-    }
-  } else {
-    if (errorMsg) {
-      errorMsg.textContent = res.message;
-      errorMsg.style.display = 'block';
-    }
-  }
-}
 
 // ==========================================================================
 // NAVEGACIÓN ENTRE PESTAÑAS (TABS ANDROID)
@@ -138,6 +107,10 @@ function switchView(viewId, tabBtn) {
     renderJuegoActivoView();
   } else if (viewId === 'view-lotteries') {
     renderLotteryView();
+  } else if (viewId === 'view-play-safe') {
+    if (typeof PlaySafeEngine !== 'undefined') {
+      PlaySafeEngine.init();
+    }
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -966,6 +939,212 @@ function setAppFontSize(size) {
   }
 }
 
+function setNewUserExpiryDays(days) {
+  const expiresInput = document.getElementById('new-user-expires');
+  if (expiresInput && typeof AuthManager !== 'undefined') {
+    expiresInput.value = AuthManager.addDaysToDate(AuthManager.getTodayDateStr(), days);
+  }
+  document.querySelectorAll('.expiry-quick-pills .btn-pill-quick').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  if (typeof event !== 'undefined' && event && event.target) {
+    event.target.classList.add('active');
+  }
+}
+
+function renderUsersListUI() {
+  const container = document.getElementById('users-list-container');
+  if (!container || typeof AuthManager === 'undefined') return;
+
+  const users = AuthManager.getUsers();
+  const countEl = document.getElementById('users-count-badge');
+  if (countEl) {
+    countEl.textContent = `${users.length} cuenta${users.length !== 1 ? 's' : ''}`;
+  }
+
+  if (users.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:12px; color:#64748b; font-size:0.8rem;">No hay usuarios registrados</div>`;
+    return;
+  }
+
+  container.innerHTML = users.map(user => {
+    const isMaster = (user.username.toLowerCase() === 'admin');
+    const isActive = user.status === 'active';
+    const subStatus = AuthManager.getSubscriptionStatus(user);
+
+    const roleBadge = isMaster 
+      ? '<span class="badge-role-admin">🔒 Administrador</span>' 
+      : '<span class="badge-role-vip">⭐ Cliente VIP</span>';
+    const statusBadge = isActive 
+      ? '<span class="badge-status-active">🟢 Activo</span>' 
+      : '<span class="badge-status-inactive">🔴 Inactivo</span>';
+    const subBadge = isMaster
+      ? '<span class="badge-sub-admin">♾️ Ilimitado</span>'
+      : `<span class="${subStatus.badgeClass}">${subStatus.isExpired ? '🔴 Vencida' : '📅 ' + subStatus.label}</span>`;
+
+    const ipInfo = user.registeredIp 
+      ? `<span class="user-ip-bound">🌐 IP: <code>${user.registeredIp}</code></span>`
+      : `<span class="user-ip-unbound">🌐 IP: <em>Sin vincular (se fijará en 1er login)</em></span>`;
+
+    return `
+      <div class="user-item-card ${!isActive ? 'user-item-inactive' : ''}">
+        <div class="user-item-header">
+          <div class="user-item-identity">
+            <span class="user-item-icon">${isMaster ? '👑' : '👤'}</span>
+            <div>
+              <div class="user-item-title">
+                <strong>${user.username}</strong>
+                ${roleBadge}
+                ${statusBadge}
+                ${subBadge}
+              </div>
+              <div class="user-item-name">${user.name || user.username}</div>
+            </div>
+          </div>
+          <div class="user-item-meta">
+            <span class="user-item-date">${!isMaster && user.expiresAt ? `📅 Vence: <strong>${user.expiresAt}</strong>` : (user.createdAt || 'Registrado')}</span>
+          </div>
+        </div>
+
+        <div class="user-item-creds">
+          <div class="user-cred-row">
+            <span class="user-cred-label">🔑 Clave:</span>
+            <code class="user-cred-val" id="user-pwd-${user.id}">${user.password}</code>
+            <button type="button" class="btn-user-action-sm" onclick="PaymentsAndWhatsApp.copyText('${user.password}', 'Clave de ${user.username}')" title="Copiar clave">📋</button>
+            <button type="button" class="btn-user-action-sm" onclick="changeUserPasswordPrompt('${user.id}', '${user.username}')" title="Cambiar clave">✏️</button>
+          </div>
+          <div class="user-cred-row" style="margin-top: 4px; font-size: 0.72rem;">
+            ${ipInfo}
+            ${user.registeredIp && !isMaster ? `
+              <button type="button" class="btn-user-action-sm btn-release-ip-btn" onclick="releaseUserIPAction('${user.id}')" title="Liberar IP para permitir cambio de red o dispositivo">
+                🔄 Liberar IP
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        ${!isMaster ? `
+          <div class="user-item-actions">
+            <button type="button" class="btn-user-action btn-renew" onclick="renewSubscriptionPrompt('${user.id}', '${user.username}')" title="Extender días de suscripción">
+              📅 +30 Días
+            </button>
+            <button type="button" class="btn-user-action ${isActive ? 'btn-deactivate' : 'btn-activate'}" onclick="toggleUserStatusAction('${user.id}')">
+              ${isActive ? '⏸️ Suspender' : '▶️ Activar'}
+            </button>
+            <button type="button" class="btn-user-action btn-delete" onclick="deleteUserAction('${user.id}')">
+              🗑️ Eliminar
+            </button>
+          </div>
+        ` : `
+          <div class="user-item-actions">
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Cuenta maestra del sistema (Sin límite de IP ni fecha)</span>
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+function addNewUserAction() {
+  const userEl = document.getElementById('new-user-username');
+  const passEl = document.getElementById('new-user-password');
+  const nameEl = document.getElementById('new-user-name');
+  const expiresEl = document.getElementById('new-user-expires');
+
+  const username = userEl ? userEl.value.trim() : '';
+  const password = passEl ? passEl.value.trim() : '';
+  const name = nameEl ? nameEl.value.trim() : '';
+  const expiresAt = expiresEl ? expiresEl.value : null;
+
+  if (!username || !password) {
+    alert('Por favor ingrese tanto el nombre de usuario como la contraseña para el nuevo acceso VIP.');
+    return;
+  }
+
+  const res = AuthManager.addUser(username, password, name, 'vip', expiresAt);
+  if (res.success) {
+    if (userEl) userEl.value = '';
+    if (passEl) passEl.value = '';
+    if (nameEl) nameEl.value = '';
+    if (expiresEl && typeof AuthManager !== 'undefined') {
+      expiresEl.value = AuthManager.addDaysToDate(AuthManager.getTodayDateStr(), 30);
+    }
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(`¡Usuario VIP "${username}" creado exitosamente!`);
+  } else {
+    alert(res.message);
+  }
+}
+
+function toggleUserStatusAction(userId) {
+  const res = AuthManager.toggleUserStatus(userId);
+  if (res.success) {
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
+function releaseUserIPAction(userId) {
+  if (!confirm('¿Desea liberar la IP de este usuario? Al hacerlo, el cliente podrá iniciar sesión desde su nueva red o dispositivo y quedará autorizada.')) {
+    return;
+  }
+  const res = AuthManager.releaseUserIP(userId);
+  if (res.success) {
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
+function renewSubscriptionPrompt(userId, username) {
+  const daysStr = prompt(`¿Cuántos días desea agregar a la suscripción de "${username}"?`, "30");
+  if (daysStr === null) return;
+  const days = parseInt(daysStr, 10);
+  if (isNaN(days) || days <= 0) {
+    alert('Por favor ingrese una cantidad válida de días (ejemplo: 30).');
+    return;
+  }
+  const res = AuthManager.renewUserSubscription(userId, days);
+  if (res.success) {
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
+function changeUserPasswordPrompt(userId, username) {
+  const newPass = prompt(`Ingrese la nueva clave autorizada para el usuario "${username}":`);
+  if (newPass === null) return;
+  if (!newPass.trim()) {
+    alert('La contraseña no puede estar vacía.');
+    return;
+  }
+  const res = AuthManager.updateUserPassword(userId, newPass.trim());
+  if (res.success) {
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
+function deleteUserAction(userId) {
+  if (!confirm('¿Está seguro de que desea eliminar a este usuario VIP? Ya no podrá ingresar a la app.')) {
+    return;
+  }
+  const res = AuthManager.deleteUser(userId);
+  if (res.success) {
+    renderUsersListUI();
+    PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
 function loadAppSettings() {
   const settings = DatosOrbetDB.getSettings();
 
@@ -973,69 +1152,103 @@ function loadAppSettings() {
     setAppFontSize(settings.fontSize);
   }
 
-  // Cargar credenciales actuales en el formulario de ajustes
-  if (typeof AuthManager !== 'undefined') {
-    const creds = AuthManager.getCredentials();
-    const userCfg = document.getElementById('cfg-auth-user');
-    const passCfg = document.getElementById('cfg-auth-pass');
-    if (userCfg) userCfg.value = creds.username;
-    if (passCfg) passCfg.value = creds.password;
+  // Cargar lista interactiva de usuarios VIP
+  renderUsersListUI();
+
+  // Inicializar fecha de expiración por defecto (+30 días) si está vacía
+  const expiresInput = document.getElementById('new-user-expires');
+  if (expiresInput && !expiresInput.value && typeof AuthManager !== 'undefined') {
+    expiresInput.value = AuthManager.addDaysToDate(AuthManager.getTodayDateStr(), 30);
   }
 
+  // Cargar datos en los inputs del modal de ajustes
+  const waInput = document.getElementById('cfg-wa-phone');
+  const pmInput = document.getElementById('cfg-pm-info');
+  const pmBankInput = document.getElementById('cfg-pm-bank');
+  const banColInput = document.getElementById('cfg-bancolombia');
+  const nequiInput = document.getElementById('cfg-nequi');
+  const zelleInput = document.getElementById('cfg-zelle');
+  const binanceInput = document.getElementById('cfg-binance');
+
+  if (waInput && settings.whatsapp) waInput.value = settings.whatsapp.phone || '';
+  if (pmInput && settings.payments && settings.payments.pagoMovil) {
+    pmInput.value = `${settings.payments.pagoMovil.phone || ''} / ${settings.payments.pagoMovil.ci || ''}`;
+  }
+  if (pmBankInput && settings.payments && settings.payments.pagoMovil) {
+    pmBankInput.value = settings.payments.pagoMovil.bank || '';
+  }
+  if (banColInput && settings.payments && settings.payments.bancolombia) {
+    banColInput.value = settings.payments.bancolombia.accountNumber || '';
+  }
+  if (nequiInput && settings.payments && settings.payments.bancolombia) {
+    nequiInput.value = settings.payments.bancolombia.nequi || '';
+  }
+  if (zelleInput && settings.payments && settings.payments.zelle) {
+    zelleInput.value = settings.payments.zelle.email || '';
+  }
+  if (binanceInput && settings.payments && settings.payments.binance) {
+    binanceInput.value = settings.payments.binance.payId || '';
+  }
+
+  // Reflejar datos en las tarjetas visibles de "Pagos / WA"
   if (settings.payments) {
     const p = settings.payments;
     if (p.pagoMovil) {
       const pmBank = document.getElementById('pay-pm-bank');
       const pmPhone = document.getElementById('pay-pm-phone');
       const pmCi = document.getElementById('pay-pm-ci');
-      if (pmBank) pmBank.textContent = p.pagoMovil.bank;
-      if (pmPhone) pmPhone.textContent = p.pagoMovil.phone;
-      if (pmCi) pmCi.textContent = p.pagoMovil.ci;
+      if (pmBank) pmBank.textContent = p.pagoMovil.bank || 'Banco de Venezuela (0102)';
+      if (pmPhone) {
+        pmPhone.textContent = `${p.pagoMovil.phone || '0412-1234567'} 📋`;
+        pmPhone.onclick = () => PaymentsAndWhatsApp.copyText(p.pagoMovil.phone, 'Teléfono Pago Móvil');
+      }
+      if (pmCi) {
+        pmCi.textContent = `${p.pagoMovil.ci || 'V-20.123.456'} 📋`;
+        pmCi.onclick = () => PaymentsAndWhatsApp.copyText(p.pagoMovil.ci, 'Cédula Pago Móvil');
+      }
     }
     if (p.bancoBolivares) {
       const veAcc = document.getElementById('pay-ve-account');
-      if (veAcc) veAcc.textContent = p.bancoBolivares.accountNumber;
+      if (veAcc) {
+        veAcc.textContent = `${p.bancoBolivares.accountNumber || '0134-0000-00-0000000000'} 📋`;
+        veAcc.onclick = () => PaymentsAndWhatsApp.copyText(p.bancoBolivares.accountNumber, 'Cuenta Banesco');
+      }
     }
     if (p.bancolombia) {
       const coAcc = document.getElementById('pay-co-account');
       const coNequi = document.getElementById('pay-co-nequi');
-      if (coAcc) coAcc.textContent = p.bancolombia.accountNumber;
-      if (coNequi) coNequi.textContent = p.bancolombia.nequi;
+      if (coAcc) {
+        coAcc.textContent = `${p.bancolombia.accountNumber || '123-456789-00'} 📋`;
+        coAcc.onclick = () => PaymentsAndWhatsApp.copyText(p.bancolombia.accountNumber, 'Cuenta Bancolombia');
+      }
+      if (coNequi) {
+        coNequi.textContent = `${p.bancolombia.nequi || '312-3456789'} 📋`;
+        coNequi.onclick = () => PaymentsAndWhatsApp.copyText(p.bancolombia.nequi, 'Nequi');
+      }
     }
     if (p.zelle) {
       const usZelle = document.getElementById('pay-us-zelle');
-      if (usZelle) usZelle.textContent = p.zelle.email;
+      if (usZelle) {
+        usZelle.textContent = `${p.zelle.email || 'pagos.datosorbet@gmail.com'} 📋`;
+        usZelle.onclick = () => PaymentsAndWhatsApp.copyText(p.zelle.email, 'Correo Zelle');
+      }
     }
     if (p.binance) {
       const binId = document.getElementById('pay-binance-id');
-      if (binId) binId.textContent = p.binance.payId;
+      if (binId) {
+        binId.textContent = `${p.binance.payId || '298371928'} 📋`;
+        binId.onclick = () => PaymentsAndWhatsApp.copyText(p.binance.payId, 'Binance Pay ID');
+      }
     }
-  }
-
-  const waInput = document.getElementById('cfg-wa-phone');
-  const pmInput = document.getElementById('cfg-pm-info');
-  const banColInput = document.getElementById('cfg-bancolombia');
-  const zelleInput = document.getElementById('cfg-zelle');
-  const binanceInput = document.getElementById('cfg-binance');
-
-  if (waInput && settings.whatsapp) waInput.value = settings.whatsapp.phone;
-  if (pmInput && settings.payments && settings.payments.pagoMovil) {
-    pmInput.value = `${settings.payments.pagoMovil.phone} / ${settings.payments.pagoMovil.ci}`;
-  }
-  if (banColInput && settings.payments && settings.payments.bancolombia) {
-    banColInput.value = settings.payments.bancolombia.accountNumber;
-  }
-  if (zelleInput && settings.payments && settings.payments.zelle) {
-    zelleInput.value = settings.payments.zelle.email;
-  }
-  if (binanceInput && settings.payments && settings.payments.binance) {
-    binanceInput.value = settings.payments.binance.payId;
   }
 }
 
 function openSettingsModal() {
   const modal = document.getElementById('settings-modal');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    loadAppSettings();
+  }
 }
 
 function closeSettingsModal() {
@@ -1046,27 +1259,67 @@ function closeSettingsModal() {
 function saveCustomSettings() {
   const settings = DatosOrbetDB.getSettings();
 
-  const wa = document.getElementById('cfg-wa-phone').value.trim();
-  const banCol = document.getElementById('cfg-bancolombia').value.trim();
-  const zelle = document.getElementById('cfg-zelle').value.trim();
-  const binance = document.getElementById('cfg-binance').value.trim();
+  const waEl = document.getElementById('cfg-wa-phone');
+  const pmInfoEl = document.getElementById('cfg-pm-info');
+  const pmBankEl = document.getElementById('cfg-pm-bank');
+  const banColEl = document.getElementById('cfg-bancolombia');
+  const nequiEl = document.getElementById('cfg-nequi');
+  const zelleEl = document.getElementById('cfg-zelle');
+  const binanceEl = document.getElementById('cfg-binance');
 
-  if (wa) settings.whatsapp.phone = wa;
-  if (banCol) settings.payments.bancolombia.accountNumber = banCol;
-  if (zelle) settings.payments.zelle.email = zelle;
-  if (binance) settings.payments.binance.payId = binance;
+  // Asegurar estructura
+  settings.whatsapp = settings.whatsapp || {};
+  settings.payments = settings.payments || {};
+  settings.payments.pagoMovil = settings.payments.pagoMovil || {};
+  settings.payments.bancolombia = settings.payments.bancolombia || {};
+  settings.payments.zelle = settings.payments.zelle || {};
+  settings.payments.binance = settings.payments.binance || {};
+  settings.payments.bancoBolivares = settings.payments.bancoBolivares || {};
 
-  // Actualizar credenciales si fueron modificadas
-  const newUser = document.getElementById('cfg-auth-user').value.trim();
-  const newPass = document.getElementById('cfg-auth-pass').value.trim();
-  if (newUser && newPass && typeof AuthManager !== 'undefined') {
-    AuthManager.saveCredentials(newUser, newPass);
+  if (waEl && waEl.value.trim()) {
+    settings.whatsapp.phone = waEl.value.trim();
+    settings.whatsappNumber = waEl.value.trim();
+  }
+
+  if (pmInfoEl && pmInfoEl.value.trim()) {
+    const rawVal = pmInfoEl.value.trim();
+    if (rawVal.includes('/')) {
+      const parts = rawVal.split('/');
+      settings.payments.pagoMovil.phone = parts[0].trim();
+      settings.payments.pagoMovil.ci = parts[1].trim();
+    } else {
+      settings.payments.pagoMovil.phone = rawVal;
+    }
+  }
+
+  if (pmBankEl && pmBankEl.value.trim()) {
+    settings.payments.pagoMovil.bank = pmBankEl.value.trim();
+  }
+
+  if (banColEl && banColEl.value.trim()) {
+    settings.payments.bancolombia.accountNumber = banColEl.value.trim();
+  }
+
+  if (nequiEl && nequiEl.value.trim()) {
+    settings.payments.bancolombia.nequi = nequiEl.value.trim();
+  }
+
+  if (zelleEl && zelleEl.value.trim()) {
+    settings.payments.zelle.email = zelleEl.value.trim();
+  }
+
+  if (binanceEl && binanceEl.value.trim()) {
+    settings.payments.binance.payId = binanceEl.value.trim();
   }
 
   DatosOrbetDB.saveSettings(settings);
   loadAppSettings();
+  if (typeof PlaySafeEngine !== 'undefined') {
+    PlaySafeEngine.updatePaymentInfoCard();
+    PlaySafeEngine.calculateAndRenderTotal();
+  }
   closeSettingsModal();
-  PaymentsAndWhatsApp.showToast('¡Ajustes y credenciales guardados correctamente!');
+  PaymentsAndWhatsApp.showToast('¡Ajustes y datos cambiarios guardados con éxito!');
 }
 
 // ==========================================================================

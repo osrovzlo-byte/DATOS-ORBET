@@ -468,97 +468,179 @@
       <!-- ==========================================================
            VISTA 5: IMPORTADOR OFICIAL Y SINCRONIZACIÓN
            ========================================================== -->
-      <section id="view-import" class="view-section">
+      <!-- ==========================================================
+           VISTA 5: JUEGA Y COBRA SEGURO (SELLADO DE JUGADAS VIP)
+           ========================================================== -->
+      <section id="view-play-safe" class="view-section">
         
-        <div class="payments-header-card" style="border-left-color: var(--color-azul-claro);">
-          <h2>📥 Importador de Estadísticas Oficiales</h2>
-          <p style="font-size: 0.85rem; color: #e2e8f0; margin-top: 4px;">
-            Suministra día a día los resultados y estadísticas oficiales copiando directamente las tablas de resultados.
-          </p>
+        <!-- Cabecera de Sellado Seguro -->
+        <div class="play-safe-header-card">
+          <div class="play-safe-header-content">
+            <span class="play-safe-badge">🛡️ Sellado 100% Oficial y Seguro</span>
+            <h2>🎲 Juega y Cobra Seguro</h2>
+            <p>
+              Arma tu ticket, selecciona tus animalitos y asegura tus jugadas. Cancela por Pago Móvil y envíalo directamente con tu capture por WhatsApp.
+            </p>
+          </div>
         </div>
 
-        <!-- Carga en vivo automática -->
-        <div class="stats-table-box" style="padding: 16px; margin-bottom: 18px;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--color-azul-rey); margin-bottom: 6px;">
-            🔄 Sincronización Automática Diaria
-          </h3>
-          <p style="font-size: 0.82rem; color: var(--color-gris-texto); margin-bottom: 12px;">
-            Verifica los sorteos cerrados hoy y los actualiza en la base de datos de tu teléfono.
+        <!-- PASO 1: OPERADORA Y HORARIOS -->
+        <div class="play-step-card">
+          <div class="play-step-header">
+            <span class="step-badge">Paso 1</span>
+            <h4>🎰 Selecciona la Operadora y Horario(s)</h4>
+          </div>
+
+          <div class="play-field-group">
+            <label class="play-field-label">Operadora de Animalitos:</label>
+            <select id="play-lottery-select" class="custom-select play-select" onchange="PlaySafeEngine.onLotteryChange(this.value)">
+              <!-- Opciones dinámicas de LOTERIAS_CONFIG -->
+            </select>
+          </div>
+
+          <div class="play-field-group" style="margin-top: 12px;">
+            <label class="play-field-label">
+              ⏰ Horario(s) de Sorteo a Jugar:
+              <span class="play-hint-text">(Puedes marcar más de uno)</span>
+            </label>
+            <div id="play-schedules-container" class="schedules-pills-grid">
+              <!-- Botones dinámicos de horarios -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 2: NÚMEROS Y ANIMALITOS -->
+        <div class="play-step-card">
+          <div class="play-step-header">
+            <span class="step-badge">Paso 2</span>
+            <h4>🐾 Elige tus Números / Animalitos</h4>
+            <span class="numbers-count-pill" id="play-numbers-count">2 números</span>
+          </div>
+
+          <div class="play-number-input-row">
+            <input type="text" id="play-number-input" class="date-input play-input-search" 
+              placeholder="Escribe número o animalito (ej: 0 Delfín, 00 Ballena, 34 Venado)" 
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); PlaySafeEngine.addFromSearchInput(); }">
+            <button type="button" class="btn-add-num" onclick="PlaySafeEngine.addFromSearchInput()">
+              ➕ Agregar
+            </button>
+            <button type="button" class="btn-browse-nums" onclick="PlaySafeEngine.openAnimalitosGridModal()" title="Ver lista completa de animalitos">
+              📋 Catálogo
+            </button>
+          </div>
+
+          <!-- Chips de números agregados -->
+          <div class="selected-chips-wrapper">
+            <label class="play-field-label">Animalitos en tu Jugada:</label>
+            <div id="play-selected-chips" class="selected-chips-container">
+              <!-- Renderizado dinámico desde PlaySafeEngine -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 3: MONTO POR NÚMERO Y TOTAL CALCULADO -->
+        <div class="play-step-card">
+          <div class="play-step-header">
+            <span class="step-badge">Paso 3</span>
+            <h4>💰 Monto por Número y Total a Pagar</h4>
+          </div>
+
+          <div class="amount-control-row">
+            <div style="flex: 1;">
+              <label class="play-field-label">
+                Monto por cada número (Bs):
+                <span class="play-hint-text" style="color: #0284c7; font-weight: 700;">(Mínimo 50 Bs)</span>
+              </label>
+              <div class="amount-input-box">
+                <input type="number" id="play-amount-input" class="date-input play-amount-field" value="50" min="50" step="1"
+                  oninput="PlaySafeEngine.setAmount(this.value)"
+                  onblur="PlaySafeEngine.validateMinAmount(this)">
+                <span class="amount-suffix">Bs</span>
+              </div>
+            </div>
+            <div class="amount-quick-pills">
+              <span style="font-size: 0.72rem; color: #64748b; font-weight: 700;">Rápidos:</span>
+              <button type="button" class="btn-amount-pill active" data-amount="50" onclick="PlaySafeEngine.setAmount(50)">50 Bs</button>
+              <button type="button" class="btn-amount-pill" data-amount="100" onclick="PlaySafeEngine.setAmount(100)">100 Bs</button>
+              <button type="button" class="btn-amount-pill" data-amount="200" onclick="PlaySafeEngine.setAmount(200)">200 Bs</button>
+              <button type="button" class="btn-amount-pill" data-amount="500" onclick="PlaySafeEngine.setAmount(500)">500 Bs</button>
+              <button type="button" class="btn-amount-pill" data-amount="1000" onclick="PlaySafeEngine.setAmount(1000)">1000 Bs</button>
+            </div>
+          </div>
+
+          <!-- BANNER DESTACADO DEL TOTAL -->
+          <div class="play-total-banner">
+            <div class="play-total-title">MONTO TOTAL A CANCELAR:</div>
+            <div class="play-total-amount" id="play-total-bs">100,00 Bs</div>
+            <div class="play-breakdown" id="play-breakdown-text">2 números × 1 horario × 50,00 Bs = 100,00 Bs</div>
+          </div>
+        </div>
+
+        <!-- PASO 4: DATOS DE PAGO MÓVIL OFICIALES -->
+        <div class="play-step-card">
+          <div class="play-step-header">
+            <span class="step-badge">Paso 4</span>
+            <h4>📲 Datos para realizar tu Pago Móvil</h4>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--color-gris-texto); margin-bottom: 10px;">
+            Realiza el Pago Móvil por el monto total exacto. Pulsa cualquier dato para copiarlo al instante:
           </p>
-          <button class="sync-now-btn" style="padding: 12px 18px; font-size: 0.95rem; width: 100%; justify-content: center;" onclick="handleLiveSync()">
-            ⚡ Cargar en Vivo Sorteos de Hoy
+
+          <div class="pm-details-box">
+            <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-card-bank').textContent, 'Banco Pago Móvil')">
+              <span class="pm-lbl">🏦 Banco:</span>
+              <strong class="pm-val" id="pm-card-bank">Banco de Venezuela (0102)</strong>
+              <button type="button" class="btn-pm-copy">📋</button>
+            </div>
+            <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-card-phone').textContent, 'Teléfono Pago Móvil')">
+              <span class="pm-lbl">📱 Teléfono:</span>
+              <strong class="pm-val" id="pm-card-phone">0412-1234567</strong>
+              <button type="button" class="btn-pm-copy">📋</button>
+            </div>
+            <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-card-ci').textContent, 'Cédula Pago Móvil')">
+              <span class="pm-lbl">🪪 Cédula / RIF:</span>
+              <strong class="pm-val" id="pm-card-ci">V-20.123.456</strong>
+              <button type="button" class="btn-pm-copy">📋</button>
+            </div>
+            <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-copy-amount').textContent.replace(' Bs',''), 'Monto Total')">
+              <span class="pm-lbl">💵 Monto Exacto:</span>
+              <strong class="pm-val" style="color: #059669; font-weight: 900;" id="pm-copy-amount">100.00 Bs</strong>
+              <button type="button" class="btn-pm-copy">📋</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 5: REFERENCIA Y ENVÍO POR WHATSAPP CON CAPTURE -->
+        <div class="play-step-card" style="border: 2px solid #10b981; background: #f0fdf4;">
+          <div class="play-step-header">
+            <span class="step-badge" style="background:#10b981; color:#fff;">Paso 5</span>
+            <h4 style="color: #065f46;">🧾 Ingresa la Referencia y Sella tu Jugada</h4>
+          </div>
+
+          <div class="play-field-group">
+            <label class="play-field-label" style="color: #065f46;">Número de Referencia del Pago Móvil:</label>
+            <input type="text" id="play-reference-input" class="date-input play-input-ref" 
+              placeholder="Ej: 123456 (últimos dígitos del recibo)"
+              autocomplete="off" autocorrect="off">
+          </div>
+
+          <div class="play-capture-alert">
+            📸 <strong>¡MUY IMPORTANTE!</strong> Al presionar el botón abajo, se abrirá WhatsApp con el ticket de tu jugada. <strong>Recuerda adjuntar la captura de pantalla (capture)</strong> de tu Pago Móvil en el chat para validar la jugada inmediatamente.
+          </div>
+
+          <button type="button" class="btn-submit-play-wa" onclick="PlaySafeEngine.submitPlaySafeTicket()">
+            <span class="wa-send-icon">📲</span>
+            <span>Enviar Ticket y Capture por WhatsApp</span>
           </button>
         </div>
 
-        <!-- Pegar texto o tabla de páginas oficiales -->
-        <div class="stats-table-box" style="padding: 16px; margin-bottom: 18px;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--color-azul-rey); margin-bottom: 6px;">
-            📋 Importar Texto o Tablas
-          </h3>
-          <p style="font-size: 0.82rem; color: var(--color-gris-texto); margin-bottom: 10px;">
-            Copia y pega la tabla de resultados (sorteos o días sin salir):
-          </p>
-          <textarea id="import-text-input" rows="4" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--color-azul-claro); font-family: monospace; font-size: 0.9rem;" placeholder="Ejemplo:
-05 - LEON 9
-20 - COCHINO 8
-16 - OSO 6
-12:00 PM: 04 Alacrán"></textarea>
-          
-          <div style="margin-top: 10px; display: flex; gap: 8px;">
-            <button class="btn-generate-pyramid" style="padding: 10px; font-size: 0.9rem;" onclick="processTextImport()">
-              🔍 Analizar Texto e Importar
-            </button>
+        <!-- HISTORIAL DE MIS JUGADAS RECIENTES -->
+        <div class="play-step-card" style="margin-top: 14px;">
+          <div class="play-step-header">
+            <h4>📋 Mis Jugadas Recientes en este Dispositivo</h4>
           </div>
-        </div>
-
-        <!-- Entrada Manual Rápida -->
-        <div class="stats-table-box" style="padding: 16px; margin-bottom: 18px;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--color-azul-rey); margin-bottom: 12px;">
-            ✍️ Registrar Sorteo Manualmente
-          </h3>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Lotería:</label>
-              <select id="manual-lottery-select" class="custom-select" style="padding: 8px 12px; font-size: 0.9rem;"></select>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div>
-                <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Fecha:</label>
-                <input type="date" id="manual-date-input" class="date-input" style="padding: 6px;">
-              </div>
-              <div>
-                <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Hora / Sorteo:</label>
-                <input type="text" id="manual-time-input" class="date-input" placeholder="Ej: 12:00 PM" style="padding: 6px;">
-              </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div>
-                <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Número Ganador:</label>
-                <input type="text" id="manual-number-input" class="date-input" placeholder="Ej: 05" style="padding: 6px; font-weight: 800; font-size: 1.1rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Nombre del Animalito:</label>
-                <input type="text" id="manual-extra-input" class="date-input" placeholder="Ej: León" style="padding: 6px;">
-              </div>
-            </div>
-            <button class="apply-range-btn" style="margin-top: 4px;" onclick="saveManualDraw()">
-              💾 Guardar Sorteo
-            </button>
-          </div>
-        </div>
-
-        <!-- Copia de Seguridad y Restauración -->
-        <div class="stats-table-box" style="padding: 16px; margin-bottom: 18px;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--color-azul-rey); margin-bottom: 10px;">
-            💾 Copia de Seguridad de Datos
-          </h3>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-generate-pyramid" style="background: var(--color-azul-rey); padding: 10px; font-size: 0.85rem;" onclick="exportBackupData()">
-              ⬇️ Descargar Copia
-            </button>
-            <button class="btn-generate-pyramid" style="background: #ef4444; padding: 10px; font-size: 0.85rem;" onclick="confirmResetData()">
-              ⚠️ Restaurar Fábrica
-            </button>
+          <div id="play-tickets-history" class="tickets-history-container">
+            <!-- Renderizado dinámico desde PlaySafeEngine -->
           </div>
         </div>
 
@@ -687,9 +769,9 @@
         <span class="tab-icon">🔺</span>
         <span class="tab-label">Triángulos</span>
       </button>
-      <button class="nav-tab" data-view="view-import" onclick="switchView('view-import', this)">
-        <span class="tab-icon">📥</span>
-        <span class="tab-label">Importar</span>
+      <button class="nav-tab" data-view="view-play-safe" onclick="switchView('view-play-safe', this)">
+        <span class="tab-icon">🎲</span>
+        <span class="tab-label">Juega y Cobra</span>
       </button>
       <button class="nav-tab" data-view="view-payments" onclick="switchView('view-payments', this)">
         <span class="tab-icon">💳</span>
@@ -709,55 +791,115 @@
           <h3>⚙️ Ajustes de Datos Orbet</h3>
           <button class="modal-close-btn" onclick="closeSettingsModal()">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body settings-modal-body">
           <p style="font-size: 0.85rem; color: var(--color-gris-texto); margin-bottom: 14px;">
-            Personalice su número de WhatsApp, datos bancarios y credenciales de acceso:
+            Gestione las cuentas de acceso VIP de sus clientes y personalice sus datos cambiarios oficiales:
           </p>
 
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            
-            <h4 style="font-size: 0.85rem; color: var(--color-azul-rey); border-bottom: 1px solid var(--color-azul-claro); padding-bottom: 4px; margin-top: 4px;">
-              🔐 Credenciales de Acceso al Sistema
-            </h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <!-- SECCIÓN 1: USUARIOS Y CLAVES VIP -->
+          <div class="settings-section-card">
+            <div class="settings-section-header">
+              <h4>👥 Control de Acceso: Usuarios y Claves VIP</h4>
+              <span class="users-count-pill" id="users-count-badge">1 cuenta</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--color-gris-texto); margin-bottom: 10px;">
+              Cree accesos con claves independientes para cada cliente VIP. Podrá activar, suspender o eliminarlos cuando lo desee.
+            </p>
+
+            <!-- Formulario para agregar nuevo usuario -->
+            <div class="new-user-form-box">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <div>
+                  <label class="settings-field-label">Usuario:</label>
+                  <input type="text" id="new-user-username" class="date-input" placeholder="ej: cliente01" autocapitalize="none" autocorrect="off">
+                </div>
+                <div>
+                  <label class="settings-field-label">Contraseña:</label>
+                  <input type="text" id="new-user-password" class="date-input" placeholder="ej: vip2026" autocapitalize="none" autocorrect="off">
+                </div>
+              </div>
+              <div style="margin-bottom: 8px;">
+                <label class="settings-field-label">Nombre del Cliente / Nota:</label>
+                <input type="text" id="new-user-name" class="date-input" placeholder="ej: Carlos Pérez - Plan VIP">
+              </div>
+              <div style="margin-bottom: 10px;">
+                <label class="settings-field-label">📅 Fecha de Vencimiento de Suscripción:</label>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="date" id="new-user-expires" class="date-input" style="flex: 1;">
+                </div>
+                <div class="expiry-quick-pills">
+                  <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Planes rápidos:</span>
+                  <button type="button" class="btn-pill-quick" onclick="setNewUserExpiryDays(7)">+7 días</button>
+                  <button type="button" class="btn-pill-quick" onclick="setNewUserExpiryDays(15)">+15 días</button>
+                  <button type="button" class="btn-pill-quick active" onclick="setNewUserExpiryDays(30)">+30 días</button>
+                  <button type="button" class="btn-pill-quick" onclick="setNewUserExpiryDays(365)">+1 año</button>
+                </div>
+              </div>
+              <button type="button" class="btn-create-user" onclick="addNewUserAction()">
+                ➕ Crear Usuario VIP
+              </button>
+            </div>
+
+            <!-- Lista de usuarios activos -->
+            <h5 style="font-size: 0.8rem; color: var(--color-azul-rey); margin: 12px 0 6px 0;">
+              📋 Usuarios Registrados:
+            </h5>
+            <div id="users-list-container" class="users-list-container">
+              <!-- Renderizado dinámico desde renderUsersListUI() -->
+            </div>
+          </div>
+
+          <!-- SECCIÓN 2: DATOS CAMBIARIOS Y MÉTODOS DE PAGO -->
+          <div class="settings-section-card" style="margin-top: 14px;">
+            <div class="settings-section-header">
+              <h4>📲 Datos Cambiarios y Métodos de Pago</h4>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--color-gris-texto); margin-bottom: 10px;">
+              Estos datos se reflejan automáticamente en la pestaña de pagos y en el botón flotante de WhatsApp:
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 9px;">
               <div>
-                <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-azul-rey);">Usuario:</label>
-                <input type="text" id="cfg-auth-user" class="date-input" placeholder="admin">
+                <label class="settings-field-label">Teléfono WhatsApp (con código país):</label>
+                <input type="text" id="cfg-wa-phone" class="date-input" placeholder="+584121234567">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <label class="settings-field-label">Pago Móvil (Teléfono y Cédula):</label>
+                  <input type="text" id="cfg-pm-info" class="date-input" placeholder="0412-1234567 / V-20123456">
+                </div>
+                <div>
+                  <label class="settings-field-label">Pago Móvil (Banco):</label>
+                  <input type="text" id="cfg-pm-bank" class="date-input" placeholder="Banco de Venezuela (0102)">
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <label class="settings-field-label">Bancolombia (Cuenta Ahorros):</label>
+                  <input type="text" id="cfg-bancolombia" class="date-input" placeholder="123-456789-00">
+                </div>
+                <div>
+                  <label class="settings-field-label">Bancolombia (Nequi):</label>
+                  <input type="text" id="cfg-nequi" class="date-input" placeholder="312-3456789">
+                </div>
               </div>
               <div>
-                <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-azul-rey);">Contraseña:</label>
-                <input type="password" id="cfg-auth-pass" class="date-input" placeholder="orbet2026">
+                <label class="settings-field-label">Zelle (Correo electrónico):</label>
+                <input type="text" id="cfg-zelle" class="date-input" placeholder="pagos.datosorbet@gmail.com">
+              </div>
+              <div>
+                <label class="settings-field-label">Binance (Pay ID):</label>
+                <input type="text" id="cfg-binance" class="date-input" placeholder="298371928">
               </div>
             </div>
 
-            <h4 style="font-size: 0.85rem; color: var(--color-azul-rey); border-bottom: 1px solid var(--color-azul-claro); padding-bottom: 4px; margin-top: 6px;">
-              📲 WhatsApp y Pagos
-            </h4>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Teléfono WhatsApp (con código país):</label>
-              <input type="text" id="cfg-wa-phone" class="date-input" placeholder="+584121234567">
-            </div>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Pago Móvil (Teléfono y Cédula):</label>
-              <input type="text" id="cfg-pm-info" class="date-input" placeholder="0412-1234567 / V-20123456">
-            </div>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Bancolombia (Cuenta o Nequi):</label>
-              <input type="text" id="cfg-bancolombia" class="date-input" placeholder="123-456789-00">
-            </div>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Zelle (Correo):</label>
-              <input type="text" id="cfg-zelle" class="date-input" placeholder="pagos.datosorbet@gmail.com">
-            </div>
-            <div>
-              <label style="font-size: 0.8rem; font-weight: 700; color: var(--color-azul-rey);">Binance (Pay ID):</label>
-              <input type="text" id="cfg-binance" class="date-input" placeholder="298371928">
-            </div>
-            
-            <button class="apply-range-btn" style="margin-top: 10px;" onclick="saveCustomSettings()">
-              💾 Guardar Ajustes
+            <button type="button" class="apply-range-btn" style="margin-top: 14px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); font-weight: 700;" onclick="saveCustomSettings()">
+              💾 Guardar Datos Cambiarios
             </button>
-            <button class="apply-range-btn" style="margin-top: 6px; background: #ef4444;" onclick="AuthManager.logout()">
+          </div>
+
+          <div style="margin-top: 16px;">
+            <button type="button" class="apply-range-btn" style="background: #ef4444;" onclick="AuthManager.logout()">
               🚪 Cerrar Sesión
             </button>
           </div>
@@ -803,6 +945,27 @@
       </div>
     </div>
 
+    <!-- MODAL CATÁLOGO COMPLETO DE ANIMALITOS -->
+    <div id="animalitos-grid-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 480px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);">
+          <h3>🐾 Catálogo de Animalitos</h3>
+          <button class="modal-close-btn" onclick="PlaySafeEngine.closeAnimalitosGridModal()">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 14px;">
+          <p style="font-size: 0.8rem; color: var(--color-gris-texto); margin-bottom: 12px;">
+            Toca los animalitos que deseas agregar o quitar de tu ticket:
+          </p>
+          <div id="animalitos-modal-grid" class="animalitos-modal-grid">
+            <!-- Animalitos en cuadrícula dinámica -->
+          </div>
+          <button type="button" class="btn-create-user" style="margin-top: 14px;" onclick="PlaySafeEngine.closeAnimalitosGridModal()">
+            ✅ Listo, Volver a mi Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Scripts de la Aplicación en Orden Jerárquico -->
@@ -814,6 +977,7 @@
   <script src="js/juegoActivoEngine.js"></script>
   <script src="js/importer.js"></script>
   <script src="js/payments-wa.js"></script>
+  <script src="js/play-safe-engine.js"></script>
   <script src="js/app.js"></script>
 
 </body>

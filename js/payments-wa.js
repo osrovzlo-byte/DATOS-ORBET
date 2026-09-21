@@ -44,6 +44,17 @@ class PaymentsAndWhatsApp {
   }
 
   /**
+   * Copia texto desde tarjetas de pago con mensaje personalizado
+   */
+  static copyText(text, label = '') {
+    if (!text) return;
+    this.copyToClipboard(text);
+    if (label) {
+      this.showToast(`¡${label} copiado con éxito!`);
+    }
+  }
+
+  /**
    * Muestra notificación flotante (Toast)
    */
   static showToast(message) {

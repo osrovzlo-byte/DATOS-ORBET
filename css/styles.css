@@ -1803,4 +1803,953 @@ body {
   }
 }
 
+/* ==========================================================================
+   ESTILOS PARA ADMINISTRACIÓN DE USUARIOS VIP Y AJUSTES CAMBIARIOS
+   ========================================================================== */
+.settings-modal-body {
+  max-height: 75vh;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.settings-section-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.settings-section-header h4 {
+  font-size: 0.92rem;
+  color: var(--color-azul-rey);
+  font-weight: 800;
+  margin: 0;
+}
+
+.users-count-pill {
+  background: var(--color-azul-claro-fondo);
+  color: var(--color-azul-rey);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--color-azul-claro);
+}
+
+.settings-field-label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-azul-rey);
+  margin-bottom: 3px;
+}
+
+.new-user-form-box {
+  background: #ffffff;
+  border: 1px dashed var(--color-azul-claro);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.btn-create-user {
+  width: 100%;
+  padding: 9px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-create-user:active {
+  transform: scale(0.98);
+}
+
+.users-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.user-item-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.user-item-card.user-item-inactive {
+  background: #fef2f2;
+  border-color: #fecaca;
+  opacity: 0.85;
+}
+
+.user-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.user-item-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-item-icon {
+  font-size: 1.25rem;
+}
+
+.user-item-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-azul-rey-oscuro);
+}
+
+.user-item-name {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.user-item-meta {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.badge-role-admin {
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-role-vip {
+  background: #fefce8;
+  color: #854d0e;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #fef08a;
+}
+
+.badge-status-active {
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-status-inactive {
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
+}
+
+.user-item-creds {
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.user-cred-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-cred-label {
+  font-weight: 700;
+  color: #475569;
+}
+
+.user-cred-val {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0f172a;
+  background: #e2e8f0;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.btn-user-action-sm {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0 2px;
+}
+
+.user-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.btn-user-action {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-deactivate {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.btn-activate {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  margin-left: auto;
+}
+
+/* Quick expiration pills in user form */
+.expiry-quick-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-pill-quick {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-pill-quick:hover,
+.btn-pill-quick.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* Subscription Expiry Badges */
+.badge-sub-active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-sub-warning {
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #fde68a;
+  animation: pulseWarning 1.8s infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.badge-sub-expired {
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #fca5a5;
+}
+
+.badge-sub-admin {
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #86efac;
+}
+
+/* IP status in user cards */
+.user-ip-bound {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.user-ip-bound code {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.user-ip-unbound {
+  color: #64748b;
+}
+
+.btn-release-ip-btn {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.15s;
+}
+
+.btn-release-ip-btn:hover {
+  background: #dbeafe;
+}
+
+.btn-renew {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.btn-renew:hover {
+  background: #bae6fd;
+}
+
+/* WhatsApp Alert button on login access denied */
+.auth-error-header {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  color: #991b1b;
+}
+
+.auth-error-help {
+  font-size: 0.74rem;
+  color: #4b5563;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.auth-wa-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 10px rgba(37, 211, 102, 0.35);
+  margin-top: 4px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-wa-contact-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(37, 211, 102, 0.45);
+}
+
+.auth-wa-contact-btn:active {
+  transform: scale(0.98);
+}
+
+.auth-wa-icon {
+  font-size: 1.1rem;
+}
+
+/* ==========================================================================
+   MÓDULO: JUEGA Y COBRA SEGURO
+   ========================================================================== */
+.play-safe-header-card {
+  background: linear-gradient(135deg, #0B2545 0%, #1e3a8a 50%, #0369a1 100%);
+  color: #ffffff;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  border-left: 4px solid #10b981;
+  box-shadow: 0 4px 12px rgba(11, 37, 69, 0.2);
+}
+
+.play-safe-badge {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid #10b981;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.play-safe-header-card h2 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.play-safe-header-card p {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+.play-step-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.play-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 8px;
+}
+
+.step-badge {
+  background: var(--color-azul-rey);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.play-step-header h4 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--color-azul-rey);
+  margin: 0;
+  flex: 1;
+}
+
+.play-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.play-field-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.play-hint-text {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #64748b;
+  font-style: italic;
+}
+
+.play-select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-azul-claro);
+  background-color: #f8fafc;
+}
+
+/* Horarios en píldoras */
+.schedules-pills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-schedule-pill {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-schedule-pill:hover {
+  border-color: var(--color-azul-rey);
+  background: #e2e8f0;
+}
+
+.btn-schedule-pill.active {
+  background: linear-gradient(135deg, var(--color-azul-rey) 0%, #0284c7 100%);
+  color: #ffffff;
+  border-color: var(--color-azul-rey);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+}
+
+/* Buscador de animalitos */
+.play-number-input-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.play-input-search {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 9px 12px;
+}
+
+.btn-add-num {
+  background: linear-gradient(135deg, var(--color-azul-rey) 0%, #0284c7 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-browse-nums {
+  background: #f8fafc;
+  color: var(--color-azul-rey);
+  border: 1.5px solid var(--color-azul-claro);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.selected-chips-wrapper {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+.selected-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  min-height: 38px;
+  align-items: center;
+}
+
+.selected-number-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #0284c7;
+  border-radius: 16px;
+  padding: 3px 8px 3px 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  animation: chipAppear 0.2s ease;
+}
+
+@keyframes chipAppear {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.chip-num {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.74rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.chip-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chip-remove-btn {
+  background: #f1f5f9;
+  border: none;
+  color: #dc2626;
+  font-weight: 900;
+  font-size: 0.72rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.chip-remove-btn:hover {
+  background: #fee2e2;
+}
+
+.empty-chips-msg {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+  width: 100%;
+  text-align: center;
+}
+
+/* Control de Montos */
+.amount-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.amount-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.play-amount-field {
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--color-azul-rey);
+  padding: 10px 42px 10px 12px;
+}
+
+.amount-suffix {
+  position: absolute;
+  right: 12px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.amount-quick-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-amount-pill {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-amount-pill:hover,
+.btn-amount-pill.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* Banner de Total Destacado */
+.play-total-banner {
+  background: linear-gradient(135deg, #0B2545 0%, #064e3b 100%);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  border: 2px solid #10b981;
+  box-shadow: 0 4px 12px rgba(6, 78, 59, 0.25);
+}
+
+.play-total-title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #a7f3d0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.play-total-amount {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fef08a;
+  margin: 4px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.play-breakdown {
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  opacity: 0.9;
+}
+
+/* Datos de Pago Móvil */
+.pm-details-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  cursor: pointer;
+}
+
+.pm-row:last-child {
+  border-bottom: none;
+}
+
+.pm-lbl {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.pm-val {
+  font-size: 0.82rem;
+  color: #0f172a;
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+.btn-pm-copy {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0 4px;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+
+.btn-pm-copy:hover {
+  opacity: 1;
+}
+
+/* Input Referencia */
+.play-input-ref {
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 10px 12px;
+  letter-spacing: 0.5px;
+  border: 1.5px solid #10b981;
+}
+
+.play-capture-alert {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  color: #854d0e;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  margin: 10px 0 14px 0;
+}
+
+/* Botón WhatsApp de Jugada */
+.btn-submit-play-wa {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-submit-play-wa:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.5);
+}
+
+.btn-submit-play-wa:active {
+  transform: scale(0.98);
+}
+
+.wa-send-icon {
+  font-size: 1.3rem;
+}
+
+/* Historial de Tickets */
+.tickets-history-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ticket-history-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.75rem;
+}
+
+.ticket-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 3px;
+}
+
+.ticket-history-date {
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
+.btn-ticket-copy {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+/* Modal catálogo animalitos */
+.animalitos-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.animalito-modal-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.animalito-modal-btn:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.animalito-modal-btn.selected {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3);
+}
+
+.an-num {
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--color-azul-rey);
+}
+
+.an-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #334155;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 
