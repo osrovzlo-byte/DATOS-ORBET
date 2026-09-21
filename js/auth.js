@@ -111,16 +111,16 @@ class AuthManager {
   /**
    * Detecta la IP pública del usuario con timeout rápido y respaldo seguro
    */
-  static async getClientIP() {
-    if (this.cachedIp) return this.cachedIp;
-    if (this.ipFetchPromise) return this.ipFetchPromise;
+  static async getClientIP(forceRefresh = false) {
+    if (!forceRefresh && this.cachedIp) return this.cachedIp;
+    if (this.ipFetchPromise && !forceRefresh) return this.ipFetchPromise;
 
     this.ipFetchPromise = (async () => {
-      // Función auxiliar con timeout rápido (1800ms)
+      // Función auxiliar con timeout configurado (2500ms)
       const fetchFastIp = async (url, jsonKey = 'ip') => {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1800);
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
           const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
           clearTimeout(timeoutId);
           if (res.ok) {
@@ -133,12 +133,32 @@ class AuthManager {
         return null;
       };
 
-      // Consultar múltiples proveedores en paralelo para máxima velocidad en redes móviles
+      const fetchTextIp = async (url) => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
+          const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const text = (await res.text()).trim();
+            if (text && /^[\d\.:a-fA-F]+$/.test(text)) {
+              return text;
+            }
+          }
+        } catch (_) {}
+        return null;
+      };
+
+      // Consultar múltiples proveedores en paralelo para máxima velocidad y fiabilidad
       try {
         const ipResults = await Promise.allSettled([
           fetchFastIp('https://api.ipify.org?format=json', 'ip'),
           fetchFastIp('https://api64.ipify.org?format=json', 'ip'),
-          fetchFastIp('https://api.ip.sb/jsonip', 'ip')
+          fetchFastIp('https://api.ip.sb/jsonip', 'ip'),
+          fetchFastIp('https://api.my-ip.io/v2/ip.json', 'ip'),
+          fetchFastIp('https://ipwho.is/', 'ip'),
+          fetchFastIp('https://ipapi.co/json/', 'ip'),
+          fetchTextIp('https://icanhazip.com')
         ]);
 
         for (const r of ipResults) {
@@ -149,7 +169,15 @@ class AuthManager {
         }
       } catch (_) {}
 
-      // Respaldo de red/dispositivo seguro si no hay internet o fallan los endpoints de IP
+      // Respaldo de red local si se accede desde IP de red LAN (ej: 172.16.0.49)
+      if (typeof window !== 'undefined' && window.location && window.location.hostname && 
+          window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        const lanIp = 'LAN-' + window.location.hostname;
+        this.cachedIp = lanIp;
+        return lanIp;
+      }
+
+      // Respaldo de dispositivo único si no hay internet
       const fallbackId = 'DISP-' + this.getDeviceIdentifier().substring(0, 12);
       this.cachedIp = fallbackId;
       return fallbackId;
@@ -446,6 +474,28 @@ class AuthManager {
   }
 
   /**
+   * Asigna, actualiza o libera manualmente la IP autorizada de un usuario
+   */
+  static setUserIP(userId, newIp) {
+    const users = this.getUsers();
+    const normTarget = this.normalizeText(userId);
+    const target = users.find(u => u.id === userId || this.normalizeText(u.username) === normTarget);
+    if (!target) return { success: false, message: 'Usuario no encontrado.' };
+
+    const cleanIp = String(newIp || '').trim();
+    target.registeredIp = cleanIp || null;
+    if (cleanIp) {
+      target.lastLoginIp = cleanIp;
+      target.lastLoginAt = new Date().toISOString();
+    }
+    this.saveUsers(users);
+    return {
+      success: true,
+      message: cleanIp ? `IP "${cleanIp}" asignada correctamente a ${target.username}.` : `IP liberada para ${target.username}.`
+    };
+  }
+
+  /**
    * Obtiene información detallada del estado de la suscripción de un usuario
    */
   static getSubscriptionStatus(user) {
@@ -592,10 +642,18 @@ class AuthManager {
         };
       }
 
-      // 3. Validación de IP ÚNICA (Anti-compartición de cuenta para usuarios VIP)
-      if (matchedUser.role !== 'admin' && this.normalizeText(matchedUser.username) !== 'admin') {
-        const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
+      // 3. Captura y Validación de IP (Tanto Administrador como VIPs)
+      const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
+      const isAdminUser = (matchedUser.role === 'admin' || this.normalizeText(matchedUser.username) === 'admin');
 
+      if (isAdminUser) {
+        // ADMINISTRADOR: Guardar su IP activa de conexión (sin restringirlo a una única IP)
+        matchedUser.registeredIp = detectedIp;
+        matchedUser.lastLoginIp = detectedIp;
+        matchedUser.lastLoginAt = new Date().toISOString();
+        this.saveUsers(users);
+      } else {
+        // CLIENTES VIP: Validación estricta de IP única (Anti-compartición)
         if (!matchedUser.registeredIp) {
           // Primer inicio de sesión: se vincula a esta IP/dispositivo automáticamente
           matchedUser.registeredIp = detectedIp;
@@ -629,6 +687,7 @@ class AuthManager {
         role: matchedUser.role || 'vip',
         expiresAt: matchedUser.expiresAt,
         registeredIp: matchedUser.registeredIp,
+        lastLoginIp: detectedIp,
         remember: !!remember,
         timestamp: Date.now()
       };
@@ -642,6 +701,7 @@ class AuthManager {
     }
 
     if (isMasterAdmin) {
+      const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
       const session = {
         token: 'orbet_token_' + Date.now(),
         userId: 'usr_admin_master',
@@ -649,11 +709,22 @@ class AuthManager {
         name: 'Administrador Principal',
         role: 'admin',
         expiresAt: '2099-12-31',
-        registeredIp: null,
+        registeredIp: detectedIp,
+        lastLoginIp: detectedIp,
         remember: !!remember,
         timestamp: Date.now()
       };
       localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+      const users = this.getUsers();
+      const adminUser = users.find(u => this.normalizeText(u.username) === 'admin');
+      if (adminUser) {
+        adminUser.registeredIp = detectedIp;
+        adminUser.lastLoginIp = detectedIp;
+        adminUser.lastLoginAt = new Date().toISOString();
+        this.saveUsers(users);
+      }
+
       return { success: true, message: '¡Acceso concedido como Administrador!', user: session };
     }
 
@@ -666,10 +737,79 @@ class AuthManager {
   }
 
   /**
+   * Controla la visibilidad del botón de configuración:
+   * Solo visible para el rol 'admin', oculto para usuarios VIP y usuarios no autenticados
+   */
+  static updateAdminUIControls() {
+    const user = this.getCurrentUser();
+    const isAdmin = user && (user.role === 'admin' || this.normalizeText(user.username) === 'admin');
+    const btnSettings = document.getElementById('btn-header-settings');
+    if (btnSettings) {
+      btnSettings.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+    // Si no es admin y el modal de configuración estuviera activo, cerrarlo
+    if (!isAdmin) {
+      const modal = document.getElementById('settings-modal');
+      if (modal && modal.classList.contains('active')) {
+        modal.classList.remove('active');
+      }
+    }
+  }
+
+  /**
+   * Actualiza en vivo la IP de la sesión conectada en los registros y en la interfaz
+   */
+  static async updateCurrentSessionIp() {
+    const session = this.getCurrentUser();
+    if (!session) return;
+    try {
+      const ip = await this.getClientIP();
+      if (!ip) return;
+
+      // Actualizar sesión activa
+      session.lastLoginIp = ip;
+      if (!session.registeredIp) {
+        session.registeredIp = ip;
+      }
+      localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+      // Actualizar registro en lista de usuarios
+      const users = this.getUsers();
+      const user = users.find(u => this.normalizeText(u.username) === this.normalizeText(session.username));
+      if (user) {
+        let changed = false;
+        if (user.lastLoginIp !== ip) {
+          user.lastLoginIp = ip;
+          changed = true;
+        }
+        if (!user.registeredIp) {
+          user.registeredIp = ip;
+          changed = true;
+        }
+        user.lastLoginAt = new Date().toISOString();
+        if (changed) {
+          this.saveUsers(users);
+        }
+      }
+
+      // Actualizar banner en vivo del admin si está presente
+      const bannerEl = document.getElementById('admin-detected-ip-val');
+      if (bannerEl) {
+        bannerEl.textContent = ip;
+      }
+
+      if (typeof renderUsersListUI === 'function') {
+        renderUsersListUI();
+      }
+    } catch (_) {}
+  }
+
+  /**
    * Cierra la sesión activa
    */
   static logout() {
     localStorage.removeItem(this.SESSION_KEY);
+    this.updateAdminUIControls();
     const authOverlay = document.getElementById('auth-overlay');
     if (authOverlay) {
       authOverlay.classList.remove('hidden');
@@ -688,11 +828,11 @@ class AuthManager {
    * Inicializa la comprobación de autenticación en la interfaz
    */
   static initUI() {
-    // Verificar vencimientos de forma silenciosa
+    // 1. Verificar vencimientos de forma silenciosa
     this.checkExpirations();
 
-    // Pre-cargar la IP en segundo plano
-    this.getClientIP().catch(() => {});
+    // 2. Controlar visibilidad del botón de configuración (Solo Admin)
+    this.updateAdminUIControls();
 
     const authOverlay = document.getElementById('auth-overlay');
     if (!authOverlay) return;
@@ -700,9 +840,12 @@ class AuthManager {
     if (this.isAuthenticated()) {
       authOverlay.classList.add('hidden');
       authOverlay.style.display = 'none';
+      // Detectar y actualizar IP de la sesión conectada
+      this.updateCurrentSessionIp().catch(() => {});
     } else {
       authOverlay.classList.remove('hidden');
       authOverlay.style.display = 'flex';
+      this.getClientIP().catch(() => {});
     }
   }
 
@@ -763,8 +906,16 @@ async function handleAuthSubmit(event) {
         overlay.classList.add('hidden');
         overlay.style.display = 'none';
       }
+
+      // Actualizar botón de ajustes según rol (Solo Admin)
+      AuthManager.updateAdminUIControls();
+      AuthManager.updateCurrentSessionIp().catch(() => {});
+
       if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
         PaymentsAndWhatsApp.showToast('¡Bienvenido a Datos Orbet!');
+      }
+      if (typeof renderUsersListUI === 'function') {
+        try { renderUsersListUI(); } catch (_) {}
       }
       if (typeof renderLotteryView === 'function') {
         try {

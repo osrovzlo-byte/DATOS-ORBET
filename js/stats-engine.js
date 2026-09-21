@@ -69,6 +69,14 @@ class StatsEngine {
    * Extrae el universo completo de números o animales para la lotería
    */
   static getUniverse(lottery) {
+    if ((lottery.type === 'animalitos_101' || lottery.id === 'selvaplus') && typeof ANIMALITOS_101_LIST !== 'undefined') {
+      return ANIMALITOS_101_LIST.map((item) => ({
+        key: item.num,
+        label: `${item.num} - ${item.name}`,
+        name: item.name
+      }));
+    }
+
     if (lottery.type === 'animalitos_75') {
       return ANIMALITOS_75_LIST.map((item) => ({
         key: item.num,

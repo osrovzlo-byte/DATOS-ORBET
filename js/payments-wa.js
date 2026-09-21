@@ -5,6 +5,7 @@ class PaymentsAndWhatsApp {
   /**
    * Abre la conversación de WhatsApp con el mensaje predeterminado
    */
+  static openWhatsApp(customMsg = null) {
     const settings = (typeof DatosOrbetDB !== 'undefined' && DatosOrbetDB.getSettings) 
       ? DatosOrbetDB.getSettings() 
       : null;
@@ -15,6 +16,22 @@ class PaymentsAndWhatsApp {
 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
+  }
+
+  /**
+   * Abre el modal del código QR de Pago Móvil BDV
+   */
+  static openQrModal() {
+    const modal = document.getElementById('bdv-qr-modal');
+    if (modal) modal.classList.add('active');
+  }
+
+  /**
+   * Cierra el modal del código QR
+   */
+  static closeQrModal() {
+    const modal = document.getElementById('bdv-qr-modal');
+    if (modal) modal.classList.remove('active');
   }
 
   /**
@@ -76,4 +93,15 @@ class PaymentsAndWhatsApp {
   }
 }
 
+// Global helpers para facilidad de uso en HTML
+function openBdvQrModal() {
+  PaymentsAndWhatsApp.openQrModal();
+}
+
+function closeBdvQrModal() {
+  PaymentsAndWhatsApp.closeQrModal();
+}
+
 window.PaymentsAndWhatsApp = PaymentsAndWhatsApp;
+window.openBdvQrModal = openBdvQrModal;
+window.closeBdvQrModal = closeBdvQrModal;

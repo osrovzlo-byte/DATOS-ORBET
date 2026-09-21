@@ -67,6 +67,93 @@
               </div>
             </button>
           </div>
+
+          <!-- Botón Desplegable de Compartir la App (WhatsApp, Facebook e Instagram Historias) -->
+          <div class="auth-share-cta-box" id="auth-share-accordion">
+            <button type="button" class="auth-share-main-btn" id="auth-share-toggle-btn" onclick="toggleShareDrawer()" title="Desplegar opciones para compartir Datos Orbet">
+              <span class="auth-share-icon">📢</span>
+              <div class="auth-share-text">
+                <strong>Compartir esta Aplicación</strong>
+                <span>WhatsApp • Instagram • Facebook</span>
+              </div>
+              <span class="auth-share-arrow" id="auth-share-arrow-icon">▼</span>
+            </button>
+
+            <!-- Panel Desplegable con Vínculo Directo y Canales Sociales -->
+            <div id="share-drawer-panel" class="share-drawer-panel" style="display: none;">
+              
+              <!-- CAJA DEL VÍNCULO DIRECTO -->
+              <div class="share-link-box">
+                <label class="share-link-label" for="share-app-url-input">
+                  <span>🔗</span> Vínculo de Descarga de la App:
+                </label>
+                <div class="share-link-input-group">
+                  <input type="text" id="share-app-url-input" class="share-url-input" readonly value="https://osrovzlo-byte.github.io/DATOS-ORBET/" placeholder="https://osrovzlo-byte.github.io/DATOS-ORBET/" />
+                  <button type="button" class="btn-copy-link-inline" id="btn-copy-drawer-link" onclick="ShareManager.copyShareLink('share-app-url-input', this)">
+                    📋 Copiar
+                  </button>
+                </div>
+              </div>
+
+              <!-- OPCIONES DE COMPARTIR -->
+              <div class="share-drawer-actions">
+                
+                <!-- 1. WHATSAPP -->
+                <button type="button" class="btn-drawer-channel btn-drawer-wa" onclick="ShareManager.shareWhatsApp()" title="Compartir por WhatsApp">
+                  <div class="channel-badge-prio">💬 CHATS & ESTADOS</div>
+                  <div class="channel-content-row">
+                    <span class="channel-emoji">💬</span>
+                    <div class="channel-text">
+                      <strong>Enviar por WhatsApp</strong>
+                      <span>Enviar link a contactos, grupos o publícalo en tu Estado</span>
+                    </div>
+                    <span class="channel-go">➔</span>
+                  </div>
+                </button>
+
+                <!-- 2. INSTAGRAM (HISTORIAS) -->
+                <button type="button" class="btn-drawer-channel btn-drawer-ig" onclick="ShareManager.shareInstagram()" title="Publicar en Historias de Instagram">
+                  <div class="channel-badge-stories">📸 HISTORIAS & DIRECT</div>
+                  <div class="channel-content-row">
+                    <span class="channel-emoji">📸</span>
+                    <div class="channel-text">
+                      <strong>Publicar en Historias de Instagram</strong>
+                      <span>Copia el link y te lleva a Instagram para pegarlo con sticker de Enlace</span>
+                    </div>
+                    <span class="channel-go">➔</span>
+                  </div>
+                </button>
+
+                <!-- 3. FACEBOOK (HISTORIAS Y MURO) -->
+                <button type="button" class="btn-drawer-channel btn-drawer-fb" onclick="ShareManager.shareFacebook()" title="Publicar en Historias o Muro de Facebook">
+                  <div class="channel-badge-fb">📘 HISTORIAS & MURO</div>
+                  <div class="channel-content-row">
+                    <span class="channel-emoji">📘</span>
+                    <div class="channel-text">
+                      <strong>Compartir en Facebook</strong>
+                      <span>Publicar enlace en tus Historias, muro o grupos</span>
+                    </div>
+                    <span class="channel-go">➔</span>
+                  </div>
+                </button>
+
+                <!-- 4. MENÚ NATIVO MÓVIL SI ESTÁ DISPONIBLE -->
+                <div id="drawer-native-share" style="display: none; width: 100%;">
+                  <button type="button" class="btn-drawer-channel btn-drawer-native" onclick="ShareManager.shareNative()">
+                    <div class="channel-content-row">
+                      <span class="channel-emoji">📲</span>
+                      <div class="channel-text">
+                        <strong>Más opciones de mi teléfono</strong>
+                        <span>Abrir menú de compartir del sistema</span>
+                      </div>
+                      <span class="channel-go">➔</span>
+                    </div>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -93,7 +180,10 @@
             <button class="font-btn" id="btn-font-xlarge" onclick="setAppFontSize('xlarge')">A++</button>
           </div>
           
-          <button class="icon-btn-header" onclick="openSettingsModal()" title="Configuración de pagos y datos">
+          <button class="icon-btn-header" onclick="openShareAppModal()" title="Compartir Datos Orbet (WhatsApp, Facebook, Instagram)">
+            📢
+          </button>
+          <button class="icon-btn-header" id="btn-header-settings" onclick="openSettingsModal()" title="Configuración de pagos y datos (Solo Administrador)" style="display: none;">
             ⚙️
           </button>
           <button class="icon-btn-header" onclick="AuthManager.logout()" title="Cerrar Sesión">
@@ -507,7 +597,7 @@
           <div class="play-field-group" style="margin-top: 12px;">
             <label class="play-field-label">
               ⏰ Horario(s) de Sorteo a Jugar:
-              <span class="play-hint-text">(Puedes marcar más de uno)</span>
+              <span class="play-hint-text">(Puedes marcar varios · Sorteos con menos de 10 min cierran automáticamente)</span>
             </label>
             <div id="play-schedules-container" class="schedules-pills-grid">
               <!-- Botones dinámicos de horarios -->
@@ -520,7 +610,7 @@
           <div class="play-step-header">
             <span class="step-badge">Paso 2</span>
             <h4>🐾 Elige tus Números / Animalitos</h4>
-            <span class="numbers-count-pill" id="play-numbers-count">2 números</span>
+            <span class="numbers-count-pill" id="play-numbers-count">0 números</span>
           </div>
 
           <div class="play-number-input-row">
@@ -577,8 +667,8 @@
           <!-- BANNER DESTACADO DEL TOTAL -->
           <div class="play-total-banner">
             <div class="play-total-title">MONTO TOTAL A CANCELAR:</div>
-            <div class="play-total-amount" id="play-total-bs">100,00 Bs</div>
-            <div class="play-breakdown" id="play-breakdown-text">2 números × 1 horario × 50,00 Bs = 100,00 Bs</div>
+            <div class="play-total-amount" id="play-total-bs">0,00 Bs</div>
+            <div class="play-breakdown" id="play-breakdown-text">0 números seleccionados · 1 horario · 50,00 Bs c/u (Total: 0,00 Bs)</div>
           </div>
         </div>
 
@@ -610,9 +700,36 @@
             </div>
             <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-copy-amount').textContent.replace(' Bs',''), 'Monto Total')">
               <span class="pm-lbl">💵 Monto Exacto:</span>
-              <strong class="pm-val" style="color: #059669; font-weight: 900;" id="pm-copy-amount">100.00 Bs</strong>
+              <strong class="pm-val" style="color: #059669; font-weight: 900;" id="pm-copy-amount">0.00 Bs</strong>
               <button type="button" class="btn-pm-copy">📋</button>
             </div>
+          </div>
+
+          <!-- Opción Rápida Directa a BDVapp -->
+          <div class="bdv-app-cta-box" style="margin-top: 12px;">
+            <a href="https://bdvdigital.banvenez.com/pagomovil?id=V17273190&phone=584247848287&bank=0102&description=9dxBliWt4XnVSB0LTqNasQ%3D%3" 
+               target="_blank" rel="noopener noreferrer" class="btn-bdv-app-action">
+              <span class="bdv-action-icon">⚡</span>
+              <div class="bdv-action-content">
+                <span class="bdv-action-title">Si tienes BDVapp haz click aquí ➔</span>
+                <span class="bdv-action-subtitle">Abre la aplicación de forma segura y rápida</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- Escaneo de Código QR Suiche 7B / BDV -->
+          <div class="bdv-qr-card" style="margin-top: 12px;">
+            <div class="bdv-qr-header-row">
+              <span class="bdv-qr-title">📷 Código QR Pago Móvil BDV (Suiche 7B)</span>
+              <button type="button" class="btn-bdv-qr-expand" onclick="openBdvQrModal()" title="Ampliar código QR">🔍 Ampliar</button>
+            </div>
+            <div class="bdv-qr-img-box" onclick="openBdvQrModal()">
+              <img src="icons/qr_pagomovil_bdv.jpg" alt="Código QR Pago Móvil BDV Suiche 7B" class="bdv-qr-img">
+              <span class="bdv-qr-tap-hint">Toca para escanear en grande</span>
+            </div>
+            <p class="bdv-qr-instruction">
+              Escanea con <strong>BDVapp</strong> o la app de tu banco nacional con lector <strong>Suiche 7B</strong> para pagar al instante.
+            </p>
           </div>
         </div>
 
@@ -683,7 +800,7 @@
           <div class="pay-card">
             <div class="pay-card-header">
               <span class="pay-icon">📱</span>
-              <span class="pay-title">Pago Móvil Venezuela</span>
+              <span class="pay-title">Pago Móvil BDV (Banco de Venezuela)</span>
             </div>
             <div class="pay-row">
               <span class="pay-label">Banco:</span>
@@ -696,6 +813,33 @@
             <div class="pay-row">
               <span class="pay-label">Cédula:</span>
               <span class="pay-val copy-highlight" id="pay-pm-ci" onclick="PaymentsAndWhatsApp.copyText('17273190', 'Cédula')">V-17.273.190 📋</span>
+            </div>
+
+            <!-- Opción Rápida Directa a BDVapp -->
+            <div class="bdv-app-cta-box" style="margin-top: 10px;">
+              <a href="https://bdvdigital.banvenez.com/pagomovil?id=V17273190&phone=584247848287&bank=0102&description=9dxBliWt4XnVSB0LTqNasQ%3D%3" 
+                 target="_blank" rel="noopener noreferrer" class="btn-bdv-app-action">
+                <span class="bdv-action-icon">⚡</span>
+                <div class="bdv-action-content">
+                  <span class="bdv-action-title">Si tienes BDVapp haz click aquí ➔</span>
+                  <span class="bdv-action-subtitle">Abre la aplicación de forma segura y rápida</span>
+                </div>
+              </a>
+            </div>
+
+            <!-- Código QR para Escanear Suiche 7B -->
+            <div class="bdv-qr-card" style="margin-top: 10px;">
+              <div class="bdv-qr-header-row">
+                <span class="bdv-qr-title">📷 Escanea Código QR (Suiche 7B)</span>
+                <button type="button" class="btn-bdv-qr-expand" onclick="openBdvQrModal()">🔍 Ampliar</button>
+              </div>
+              <div class="bdv-qr-img-box" onclick="openBdvQrModal()">
+                <img src="icons/qr_pagomovil_bdv.jpg" alt="Código QR Pago Móvil BDV" class="bdv-qr-img">
+                <span class="bdv-qr-tap-hint">Toca para escanear en grande</span>
+              </div>
+              <p class="bdv-qr-instruction">
+                Escanea desde <strong>BDVapp</strong> o la aplicación móvil de cualquier banco con <strong>Suiche 7B</strong>.
+              </p>
             </div>
           </div>
 
@@ -811,6 +955,22 @@
             <p style="font-size: 0.78rem; color: var(--color-gris-texto); margin-bottom: 10px;">
               Cree accesos con claves independientes para cada cliente VIP. Podrá activar, suspender o eliminarlos cuando lo desee.
             </p>
+
+            <!-- MONITOR EN VIVO DE IP DE CONEXIÓN ACTUAL -->
+            <div class="admin-ip-status-banner">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.25rem;">📡</span>
+                <div>
+                  <div style="font-size: 0.72rem; color: #475569; font-weight: 700; text-transform: uppercase;">Tu IP Conectada Ahora (Admin):</div>
+                  <div style="font-size: 0.88rem; font-weight: 800; color: #0284c7; margin-top: 2px;">
+                    <code id="admin-detected-ip-val" class="admin-ip-code">Detectando IP...</code>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn-refresh-ip" onclick="refreshAdminIpDisplay()" title="Volver a consultar IP pública">
+                🔄 Refrescar IP
+              </button>
+            </div>
 
             <!-- Formulario para agregar nuevo usuario -->
             <div class="new-user-form-box">
@@ -988,6 +1148,131 @@
           </div>
           <button type="button" class="btn-create-user" style="margin-top: 14px;" onclick="PlaySafeEngine.closeAnimalitosGridModal()">
             ✅ Listo, Volver a mi Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZACIÓN QR PAGOMÓVIL BDV -->
+    <div id="bdv-qr-modal" class="modal-overlay" onclick="if(event.target===this) closeBdvQrModal()">
+      <div class="modal-card" style="max-width: 360px; text-align: center;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #003366 0%, #0284c7 100%);">
+          <h3>📷 QR Pago Móvil BDV</h3>
+          <button class="modal-close-btn" onclick="closeBdvQrModal()">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 18px 14px;">
+          <div style="background: #ffffff; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1.5px solid #e2e8f0;">
+            <img src="icons/qr_pagomovil_bdv.jpg" alt="QR Pago Móvil BDV Suiche 7B" style="width: 230px; height: 230px; object-fit: contain; display: block; border-radius: 8px;">
+          </div>
+          <div style="margin-top: 12px; font-size: 0.84rem; color: #1e293b; font-weight: 700; line-height: 1.4;">
+            <div>🏦 Banco de Venezuela (0102)</div>
+            <div>📱 0424-7848287 · 🪪 V-17.273.190</div>
+          </div>
+          <p style="font-size: 0.74rem; color: #64748b; margin-top: 6px;">
+            Compatible con lector Suiche 7B desde BDVapp y la app de cualquier banco nacional.
+          </p>
+          <div style="margin-top: 14px;">
+            <a href="https://bdvdigital.banvenez.com/pagomovil?id=V17273190&phone=584247848287&bank=0102&description=9dxBliWt4XnVSB0LTqNasQ%3D%3" 
+               target="_blank" rel="noopener noreferrer" class="btn-bdv-app-action" style="text-decoration: none;">
+              <span class="bdv-action-icon">⚡</span>
+              <div class="bdv-action-content">
+                <span class="bdv-action-title">Abrir directamente en BDVapp ➔</span>
+                <span class="bdv-action-subtitle">Paga rápido con datos precargados</span>
+              </div>
+            </a>
+          </div>
+          <button type="button" class="btn-create-user" style="margin-top: 12px; background: #e2e8f0; color: #334155;" onclick="closeBdvQrModal()">
+            Cerrar Vista QR
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL COMPARTIR APLICACIÓN (WHATSAPP, FACEBOOK, INSTAGRAM) -->
+    <div id="share-app-modal" class="modal-overlay" onclick="if(event.target===this) closeShareAppModal()">
+      <div class="modal-card" style="max-width: 420px; text-align: center;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);">
+          <h3>📢 Compartir Datos Orbet</h3>
+          <button class="modal-close-btn" onclick="closeShareAppModal()">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 18px 16px;">
+          <p style="font-size: 0.85rem; color: #334155; margin-bottom: 16px; font-weight: 600; line-height: 1.4;">
+            Recomienda la mejor app de estadísticas en vivo, números calientes y pronósticos de la suerte a tus amigos:
+          </p>
+
+          <!-- Vínculo directo de la App -->
+          <div class="share-link-box" style="margin-bottom: 14px; text-align: left;">
+            <label class="share-link-label" for="modal-share-app-url-input">
+              <span>🔗</span> Vínculo de Descarga de la App:
+            </label>
+            <div class="share-link-input-group">
+              <input type="text" id="modal-share-app-url-input" class="share-url-input" readonly value="https://osrovzlo-byte.github.io/DATOS-ORBET/" placeholder="https://osrovzlo-byte.github.io/DATOS-ORBET/" />
+              <button type="button" class="btn-copy-link-inline" id="btn-copy-modal-link" onclick="ShareManager.copyShareLink('modal-share-app-url-input', this)">
+                📋 Copiar
+              </button>
+            </div>
+          </div>
+
+          <div class="share-buttons-grid">
+            <!-- WHATSAPP -->
+            <button type="button" class="btn-share-channel btn-share-wa" onclick="ShareManager.shareWhatsApp()" title="Compartir por WhatsApp">
+              <span class="share-channel-icon">💬</span>
+              <div class="share-channel-info">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <strong>Compartir en WhatsApp</strong>
+                  <span class="channel-badge-prio" style="margin: 0;">💬 CHATS & ESTADOS</span>
+                </div>
+                <span>Enviar mensaje directo o publicar en Estados</span>
+              </div>
+              <span class="share-channel-arrow">➔</span>
+            </button>
+
+            <!-- INSTAGRAM (HISTORIAS) -->
+            <button type="button" class="btn-share-channel btn-share-ig" onclick="ShareManager.shareInstagram()" title="Publicar en Historias de Instagram">
+              <span class="share-channel-icon">📸</span>
+              <div class="share-channel-info">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <strong>Historias de Instagram</strong>
+                  <span class="channel-badge-stories" style="margin: 0;">📸 HISTORIAS</span>
+                </div>
+                <span>Copia vínculo para sticker de enlace en tus Historias</span>
+              </div>
+              <span class="share-channel-arrow">➔</span>
+            </button>
+
+            <!-- FACEBOOK (HISTORIAS Y MURO) -->
+            <button type="button" class="btn-share-channel btn-share-fb" onclick="ShareManager.shareFacebook()" title="Publicar en Historias o Muro de Facebook">
+              <span class="share-channel-icon">📘</span>
+              <div class="share-channel-info">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <strong>Facebook (Historias y Muro)</strong>
+                  <span class="channel-badge-fb" style="margin: 0;">📘 HISTORIAS</span>
+                </div>
+                <span>Publicar enlace en tus Historias o muro</span>
+              </div>
+              <span class="share-channel-arrow">➔</span>
+            </button>
+
+            <!-- COPIAR ENLACE RÁPIDO -->
+            <button type="button" class="btn-share-channel btn-share-copy" onclick="ShareManager.copyShareLink('modal-share-app-url-input', this)">
+              <span class="share-channel-icon">📋</span>
+              <div class="share-channel-info">
+                <strong>Copiar Enlace Directo</strong>
+                <span id="share-link-preview-text">Copiar enlace oficial al portapapeles</span>
+              </div>
+              <span class="share-channel-arrow">📄</span>
+            </button>
+          </div>
+
+          <!-- BOTÓN NATIVO MÓVIL SI DISPONIBLE -->
+          <div id="native-share-container" style="margin-top: 12px; display: none;">
+            <button type="button" class="btn-create-user" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 11px;" onclick="ShareManager.shareNative()">
+              📲 Menú de Compartir del Teléfono
+            </button>
+          </div>
+
+          <button type="button" class="btn-create-user" style="margin-top: 14px; background: #e2e8f0; color: #334155;" onclick="closeShareAppModal()">
+            Cerrar
           </button>
         </div>
       </div>

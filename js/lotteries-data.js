@@ -57,6 +57,111 @@ const ANIMALITOS_40_LIST = [
   { num: '39', name: 'Lechuza' }, { num: '40', name: 'Avispa' }
 ];
 
+// Lista oficial de 101 Animalitos para Selva Plus (00, 0, 01 al 99)
+const ANIMALITOS_101_LIST = [
+  { num: '00', name: 'Ballena' },
+  { num: '0', name: 'Delfín' },
+  { num: '01', name: 'Carnero' },
+  { num: '02', name: 'Toro' },
+  { num: '03', name: 'Ciempiés' },
+  { num: '04', name: 'Alacrán' },
+  { num: '05', name: 'León' },
+  { num: '06', name: 'Rana' },
+  { num: '07', name: 'Perico' },
+  { num: '08', name: 'Ratón' },
+  { num: '09', name: 'Águila' },
+  { num: '10', name: 'Tigre' },
+  { num: '11', name: 'Gato' },
+  { num: '12', name: 'Caballo' },
+  { num: '13', name: 'Mono' },
+  { num: '14', name: 'Paloma' },
+  { num: '15', name: 'Zorro' },
+  { num: '16', name: 'Oso' },
+  { num: '17', name: 'Pavo' },
+  { num: '18', name: 'Burro' },
+  { num: '19', name: 'Chivo' },
+  { num: '20', name: 'Cochino' },
+  { num: '21', name: 'Gallo' },
+  { num: '22', name: 'Camello' },
+  { num: '23', name: 'Cebra' },
+  { num: '24', name: 'Iguana' },
+  { num: '25', name: 'Gallina' },
+  { num: '26', name: 'Vaca' },
+  { num: '27', name: 'Perro' },
+  { num: '28', name: 'Zamuro' },
+  { num: '29', name: 'Elefante' },
+  { num: '30', name: 'Caimán' },
+  { num: '31', name: 'Lapa' },
+  { num: '32', name: 'Ardilla' },
+  { num: '33', name: 'Pescado' },
+  { num: '34', name: 'Venado' },
+  { num: '35', name: 'Jirafa' },
+  { num: '36', name: 'Culebra' },
+  { num: '37', name: 'Tortuga' },
+  { num: '38', name: 'Búfalo' },
+  { num: '39', name: 'Lechuza' },
+  { num: '40', name: 'Avispa' },
+  { num: '41', name: 'Canguro' },
+  { num: '42', name: 'Tucán' },
+  { num: '43', name: 'Mariposa' },
+  { num: '44', name: 'Chigüire' },
+  { num: '45', name: 'Garza' },
+  { num: '46', name: 'Puma' },
+  { num: '47', name: 'Pavo Real' },
+  { num: '48', name: 'Puercoespín' },
+  { num: '49', name: 'Pereza' },
+  { num: '50', name: 'Canario' },
+  { num: '51', name: 'Pelícano' },
+  { num: '52', name: 'Pulpo' },
+  { num: '53', name: 'Caracol' },
+  { num: '54', name: 'Grillo' },
+  { num: '55', name: 'Oso Hormiguero' },
+  { num: '56', name: 'Tiburón' },
+  { num: '57', name: 'Pato' },
+  { num: '58', name: 'Hormiga' },
+  { num: '59', name: 'Pantera' },
+  { num: '60', name: 'Camaleón' },
+  { num: '61', name: 'Panda' },
+  { num: '62', name: 'Cachicamo' },
+  { num: '63', name: 'Cangrejo' },
+  { num: '64', name: 'Gavilán' },
+  { num: '65', name: 'Araña' },
+  { num: '66', name: 'Lobo' },
+  { num: '67', name: 'Avestruz' },
+  { num: '68', name: 'Jaguar' },
+  { num: '69', name: 'Conejo' },
+  { num: '70', name: 'Bisonte' },
+  { num: '71', name: 'Guacamaya' },
+  { num: '72', name: 'Gorila' },
+  { num: '73', name: 'Hipopótamo' },
+  { num: '74', name: 'Turpial' },
+  { num: '75', name: 'Guácharo' },
+  { num: '76', name: 'Rinoceronte' },
+  { num: '77', name: 'Pingüino' },
+  { num: '78', name: 'Antílope' },
+  { num: '79', name: 'Calamar' },
+  { num: '80', name: 'Murciélago' },
+  { num: '81', name: 'Cuervo' },
+  { num: '82', name: 'Cucaracha' },
+  { num: '83', name: 'Búho' },
+  { num: '84', name: 'Camarón' },
+  { num: '85', name: 'Hámster' },
+  { num: '86', name: 'Buey' },
+  { num: '87', name: 'Cabra' },
+  { num: '88', name: 'Erizo de Mar' },
+  { num: '89', name: 'Anguila' },
+  { num: '90', name: 'Hurón' },
+  { num: '91', name: 'Morrocoy' },
+  { num: '92', name: 'Cisne' },
+  { num: '93', name: 'Gaviota' },
+  { num: '94', name: 'Paují' },
+  { num: '95', name: 'Escarabajo' },
+  { num: '96', name: 'Caballito de Mar' },
+  { num: '97', name: 'Loro' },
+  { num: '98', name: 'Cocodrilo' },
+  { num: '99', name: 'Halcón' }
+];
+
 const SIGNOS_ZODIACALES = [
   'Aries', 'Tauro', 'Géminis', 'Cáncer', 'Leo', 'Virgo',
   'Libra', 'Escorpio', 'Sagitario', 'Capricornio', 'Acuario', 'Piscis'
@@ -64,7 +169,7 @@ const SIGNOS_ZODIACALES = [
 
 // Mapa de normalización de nombres para formateo limpio
 const CANONICAL_NAMES_MAP = {};
-ANIMALITOS_75_LIST.forEach(item => {
+ANIMALITOS_101_LIST.forEach(item => {
   CANONICAL_NAMES_MAP[item.num] = item.name;
   if (item.num !== '00' && item.num !== '0') {
     CANONICAL_NAMES_MAP[parseInt(item.num, 10)] = item.name;
@@ -716,6 +821,8 @@ if (typeof window !== 'undefined') {
   window.ANIMALITOS_38_LIST = ANIMALITOS_38_LIST;
   window.ANIMALITOS_75_LIST = ANIMALITOS_75_LIST;
   window.ANIMALITOS_40_LIST = ANIMALITOS_40_LIST;
+  window.ANIMALITOS_101_LIST = ANIMALITOS_101_LIST;
+  window.ANIMALITOS_SELVAPLUS_LIST = ANIMALITOS_101_LIST;
   window.ANIMALITOS_LIST = ANIMALITOS_38_LIST;
   window.SIGNOS_ZODIACALES = SIGNOS_ZODIACALES;
 }
@@ -730,6 +837,7 @@ if (typeof module !== 'undefined' && module.exports) {
     ANIMALITOS_38_LIST,
     ANIMALITOS_75_LIST,
     ANIMALITOS_40_LIST,
+    ANIMALITOS_101_LIST,
     SIGNOS_ZODIACALES
   };
 }

@@ -25,7 +25,9 @@ class JuegoActivoEngine {
 
     // Obtener universo de animales
     let universe = typeof ANIMALITOS_38_LIST !== 'undefined' ? ANIMALITOS_38_LIST : [];
-    if (config.type === 'animalitos_75' && typeof ANIMALITOS_75_LIST !== 'undefined') {
+    if ((config.type === 'animalitos_101' || key === 'selvaplus') && typeof ANIMALITOS_101_LIST !== 'undefined') {
+      universe = ANIMALITOS_101_LIST;
+    } else if (config.type === 'animalitos_75' && typeof ANIMALITOS_75_LIST !== 'undefined') {
       universe = ANIMALITOS_75_LIST;
     } else if (config.type === 'animalitos_40' && typeof ANIMALITOS_40_LIST !== 'undefined') {
       universe = ANIMALITOS_40_LIST;

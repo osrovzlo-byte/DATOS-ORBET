@@ -117,13 +117,13 @@ const LOTERIAS_CONFIG = {
     description: "Lotto Rey (12 Sorteos Diarios)"
   },
 
-  // 8. Selva Plus: 13 sorteos al día (8:15 AM a 8:15 PM)
+  // 8. Selva Plus: 13 sorteos al día (8:15 AM a 8:15 PM) - 101 Animalitos (00, 0, 01 al 99)
   selvaplus: {
     nombre: "Selva Plus",
     url: "https://loteriadehoy.com/animalito/selvaplus/estadisticas/",
     flag: "🌴",
-    type: "animalitos",
-    maxNumber: 36,
+    type: "animalitos_101",
+    maxNumber: 99,
     sorteosDia: 13,
     schedules: [
       "08:15 AM", "09:15 AM", "10:15 AM", "11:15 AM",
@@ -131,7 +131,7 @@ const LOTERIAS_CONFIG = {
       "04:15 PM", "05:15 PM", "06:15 PM", "07:15 PM",
       "08:15 PM"
     ],
-    description: "Selva Plus Animalitos (13 Sorteos Diarios)"
+    description: "Selva Plus Millonario (101 Animalitos - 13 Sorteos Diarios)"
   },
 
   // 9. Condor Gana: 11 sorteos al día (9:00 AM a 7:00 PM)

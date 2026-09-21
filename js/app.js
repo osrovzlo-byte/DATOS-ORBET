@@ -961,6 +961,18 @@ function renderUsersListUI() {
   const container = document.getElementById('users-list-container');
   if (!container || typeof AuthManager === 'undefined') return;
 
+  // Actualizar banner de IP de conexión en vivo
+  const adminBannerVal = document.getElementById('admin-detected-ip-val');
+  if (adminBannerVal) {
+    if (AuthManager.cachedIp) {
+      adminBannerVal.textContent = AuthManager.cachedIp;
+    } else {
+      AuthManager.getClientIP().then(ip => {
+        if (adminBannerVal && ip) adminBannerVal.textContent = ip;
+      }).catch(() => {});
+    }
+  }
+
   const users = AuthManager.getUsers();
   const countEl = document.getElementById('users-count-badge');
   if (countEl) {
@@ -987,9 +999,64 @@ function renderUsersListUI() {
       ? '<span class="badge-sub-admin">♾️ Ilimitado</span>'
       : `<span class="${subStatus.badgeClass}">${subStatus.isExpired ? '🔴 Vencida' : '📅 ' + subStatus.label}</span>`;
 
-    const ipInfo = user.registeredIp 
-      ? `<span class="user-ip-bound">🌐 IP: <code>${user.registeredIp}</code></span>`
-      : `<span class="user-ip-unbound">🌐 IP: <em>Sin vincular (se fijará en 1er login)</em></span>`;
+    // Visualización clara y completa de IP para Administrador y Clientes VIP
+    let ipDisplayHtml = '';
+    if (isMaster) {
+      const activeIp = user.lastLoginIp || user.registeredIp || AuthManager.cachedIp || 'Detectando IP...';
+      const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('es-VE') : 'Sesión activa';
+      ipDisplayHtml = `
+        <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="user-ip-admin-active">
+              🌐 IP Conectada: <code>${activeIp}</code>
+              <span class="user-ip-pill-online">🟢 En Línea</span>
+            </span>
+          </div>
+          <span style="font-size: 0.71rem; color: #64748b;">
+            🕒 Última conexión: <strong>${lastLoginTime}</strong> | Acceso maestro sin restricción
+          </span>
+        </div>
+      `;
+    } else {
+      const hasBoundIp = !!user.registeredIp;
+      const boundIp = user.registeredIp;
+      const lastIp = user.lastLoginIp;
+      const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('es-VE') : null;
+
+      if (hasBoundIp) {
+        ipDisplayHtml = `
+          <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <span class="user-ip-bound">
+                🌐 IP Vinculada: <code>${boundIp}</code>
+              </span>
+              <button type="button" class="btn-user-action-sm btn-release-ip-btn" onclick="releaseUserIPAction('${user.id}')" title="Liberar IP para permitir cambio de red o teléfono">
+                🔄 Liberar
+              </button>
+              <button type="button" class="btn-user-action-sm" onclick="assignUserIPPrompt('${user.id}', '${user.username}', '${boundIp}')" title="Cambiar dirección IP manualmente">
+                ✏️ Cambiar
+              </button>
+            </div>
+            ${lastLoginTime ? `<span style="font-size: 0.71rem; color: #64748b;">🕒 Último ingreso: <strong>${lastLoginTime}</strong></span>` : ''}
+            ${lastIp && lastIp !== boundIp ? `<span style="font-size: 0.71rem; color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 4px;">⚠️ Último intento desde: ${lastIp}</span>` : ''}
+          </div>
+        `;
+      } else {
+        ipDisplayHtml = `
+          <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <span class="user-ip-unbound">
+                🌐 IP: <em>Esperando 1er inicio de sesión para vincular</em>
+              </span>
+              <button type="button" class="btn-user-action-sm" onclick="assignUserIPPrompt('${user.id}', '${user.username}', '')" title="Pre-asignar IP autorizada">
+                ➕ Asignar IP
+              </button>
+            </div>
+            ${lastIp ? `<span style="font-size: 0.71rem; color: #64748b;">📶 Última IP detectada: <code>${lastIp}</code> ${lastLoginTime ? `(${lastLoginTime})` : ''}</span>` : ''}
+          </div>
+        `;
+      }
+    }
 
     return `
       <div class="user-item-card ${!isActive ? 'user-item-inactive' : ''}">
@@ -1018,13 +1085,8 @@ function renderUsersListUI() {
             <button type="button" class="btn-user-action-sm" onclick="PaymentsAndWhatsApp.copyText('${user.password}', 'Clave de ${user.username}')" title="Copiar clave">📋</button>
             <button type="button" class="btn-user-action-sm" onclick="changeUserPasswordPrompt('${user.id}', '${user.username}')" title="Cambiar clave">✏️</button>
           </div>
-          <div class="user-cred-row" style="margin-top: 4px; font-size: 0.72rem;">
-            ${ipInfo}
-            ${user.registeredIp && !isMaster ? `
-              <button type="button" class="btn-user-action-sm btn-release-ip-btn" onclick="releaseUserIPAction('${user.id}')" title="Liberar IP para permitir cambio de red o dispositivo">
-                🔄 Liberar IP
-              </button>
-            ` : ''}
+          <div class="user-cred-row" style="margin-top: 6px;">
+            ${ipDisplayHtml}
           </div>
         </div>
 
@@ -1042,7 +1104,7 @@ function renderUsersListUI() {
           </div>
         ` : `
           <div class="user-item-actions">
-            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Cuenta maestra del sistema (Sin límite de IP ni fecha)</span>
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Cuenta maestra del sistema (Sin límite de IP ni fecha de vencimiento)</span>
           </div>
         `}
       </div>
@@ -1099,6 +1161,22 @@ function releaseUserIPAction(userId) {
   if (res.success) {
     renderUsersListUI();
     PaymentsAndWhatsApp.showToast(res.message);
+  } else {
+    alert(res.message);
+  }
+}
+
+function assignUserIPPrompt(userId, username, currentIp = '') {
+  const newIp = prompt(`Asignar dirección IP autorizada para "${username}":\n\nIngrese la dirección IP de su cliente (o deje en blanco para liberar la vinculación):`, currentIp || '');
+  if (newIp === null) return;
+  const res = AuthManager.setUserIP(userId, newIp.trim());
+  if (res.success) {
+    renderUsersListUI();
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast(res.message);
+    } else {
+      alert(res.message);
+    }
   } else {
     alert(res.message);
   }
@@ -1259,11 +1337,41 @@ function loadAppSettings() {
   }
 }
 
+async function refreshAdminIpDisplay() {
+  const el = document.getElementById('admin-detected-ip-val');
+  if (el) el.textContent = 'Consultando IP...';
+  if (typeof AuthManager !== 'undefined') {
+    const ip = await AuthManager.getClientIP(true);
+    if (el) el.textContent = ip || 'No detectada';
+    await AuthManager.updateCurrentSessionIp();
+    renderUsersListUI();
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast(`IP Conectada: ${ip}`);
+    }
+  }
+}
+
 function openSettingsModal() {
+  // Verificación estricta de seguridad: Exclusivo para rol 'admin'
+  const user = (typeof AuthManager !== 'undefined') ? AuthManager.getCurrentUser() : null;
+  const isAdmin = user && (user.role === 'admin' || (typeof AuthManager.normalizeText === 'function' && AuthManager.normalizeText(user.username) === 'admin'));
+
+  if (!isAdmin) {
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast('🔒 Esta sección es exclusiva para el Administrador.');
+    } else {
+      alert('🔒 Acceso restringido: Esta sección solo está disponible para el Administrador.');
+    }
+    return;
+  }
+
   const modal = document.getElementById('settings-modal');
   if (modal) {
     modal.classList.add('active');
     loadAppSettings();
+    if (typeof refreshAdminIpDisplay === 'function') {
+      refreshAdminIpDisplay();
+    }
   }
 }
 
@@ -1420,4 +1528,189 @@ async function checkHourlyCacheAndRefresh() {
     await renderLotteryView();
     await renderHotNumbersView();
   }
+}
+
+// ==========================================================================
+// MÓDULO DE COMPARTIR APLICACIÓN (WHATSAPP, FACEBOOK, INSTAGRAM)
+// ==========================================================================
+class ShareManager {
+  static getShareUrl() {
+    return 'https://osrovzlo-byte.github.io/DATOS-ORBET/';
+  }
+
+  static getShareText() {
+    const url = this.getShareUrl();
+    return `🎰 *¡Te recomiendo Datos Orbet - La App de la Suerte!* 🍀\n\nResultados y estadísticas oficiales en vivo de las 14 loterías de animalitos, números calientes por salir, pirámides y pronósticos diarios.\n\n👉 *Descarga o entra aquí:* ${url}`;
+  }
+
+  static shareWhatsApp() {
+    const text = this.getShareText();
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  }
+
+  static shareFacebook() {
+    const url = this.getShareUrl();
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(fbUrl, '_blank');
+  }
+
+  static async shareInstagram() {
+    const url = this.getShareUrl();
+
+    // 1. Siempre copiamos primero el enlace para que el usuario pueda usar el sticker de Enlace en Historias
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (_) {}
+    }
+
+    // 2. Si el dispositivo soporta Web Share nativo (Android / iOS)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Datos Orbet - La App de la Suerte',
+          text: '🎰 ¡Te recomiendo Datos Orbet! Estadísticas y pronósticos de la suerte 🍀',
+          url: url
+        });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+
+    // 3. Notificación guiada para historias de Instagram
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast('📸 ¡Enlace copiado! Pégalo con el sticker de "Enlace" en tu Historia');
+    } else {
+      alert('¡Enlace de Datos Orbet copiado! 📸 Abre Instagram, crea tu Historia y pégalo con el sticker de "Enlace".');
+    }
+
+    setTimeout(() => {
+      window.open('https://www.instagram.com/', '_blank');
+    }, 700);
+  }
+
+  static copyShareLink(targetInputId, btnElement) {
+    let url = this.getShareUrl();
+    if (targetInputId) {
+      const el = document.getElementById(targetInputId);
+      if (el && el.value) url = el.value;
+    }
+
+    const showFeedback = () => {
+      if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+        PaymentsAndWhatsApp.showToast('📋 ¡Vínculo copiado al portapapeles!');
+      } else {
+        alert('¡Vínculo copiado al portapapeles!');
+      }
+
+      // Animación en el botón
+      const btn = btnElement || (targetInputId ? document.querySelector(`[onclick*="${targetInputId}"]`) : null);
+      if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ ¡Copiado!';
+        btn.style.background = '#16a34a';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.background = '';
+        }, 2200);
+      }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(showFeedback).catch(() => {
+        prompt('Copie el siguiente enlace oficial de Datos Orbet:', url);
+      });
+    } else {
+      prompt('Copie el siguiente enlace oficial de Datos Orbet:', url);
+    }
+  }
+
+  static async shareNative() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Datos Orbet - La App de la Suerte',
+          text: this.getShareText(),
+          url: this.getShareUrl()
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          this.copyShareLink();
+        }
+      }
+    } else {
+      this.copyShareLink();
+    }
+  }
+}
+
+// Despliegue en acordeón / drawer dentro del login
+function toggleShareDrawer() {
+  const panel = document.getElementById('share-drawer-panel');
+  const arrow = document.getElementById('auth-share-arrow-icon');
+  const urlInput = document.getElementById('share-app-url-input');
+  const nativeContainer = document.getElementById('drawer-native-share');
+
+  if (!panel) return;
+
+  const isHidden = window.getComputedStyle(panel).display === 'none';
+  if (isHidden) {
+    panel.style.display = 'block';
+    if (arrow) arrow.textContent = '▲';
+    const currentUrl = ShareManager.getShareUrl();
+    if (urlInput) {
+      urlInput.value = currentUrl;
+      urlInput.select && setTimeout(() => urlInput.setSelectionRange(0, 0), 100);
+    }
+    if (nativeContainer) {
+      nativeContainer.style.display = (navigator && navigator.share) ? 'block' : 'none';
+    }
+  } else {
+    panel.style.display = 'none';
+    if (arrow) arrow.textContent = '▼';
+  }
+}
+
+function openShareAppModal() {
+  const modal = document.getElementById('share-app-modal');
+  if (modal) {
+    modal.classList.add('active');
+    const nativeBtn = document.getElementById('native-share-container');
+    if (nativeBtn) {
+      nativeBtn.style.display = (navigator && navigator.share) ? 'block' : 'none';
+    }
+    const currentUrl = ShareManager.getShareUrl();
+    const modalUrlInput = document.getElementById('modal-share-app-url-input');
+    if (modalUrlInput) {
+      modalUrlInput.value = currentUrl;
+    }
+    const previewEl = document.getElementById('share-link-preview-text');
+    if (previewEl) {
+      previewEl.textContent = currentUrl.length > 35 ? currentUrl.substring(0, 32) + '...' : currentUrl;
+    }
+  }
+}
+
+function closeShareAppModal() {
+  const modal = document.getElementById('share-app-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+// Inicializar inputs de vínculo al cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+  const url = ShareManager.getShareUrl();
+  const drawerInput = document.getElementById('share-app-url-input');
+  if (drawerInput) drawerInput.value = url;
+  const modalInput = document.getElementById('modal-share-app-url-input');
+  if (modalInput) modalInput.value = url;
+});
+
+// Exponer globalmente
+if (typeof window !== 'undefined') {
+  window.ShareManager = ShareManager;
+  window.toggleShareDrawer = toggleShareDrawer;
+  window.openShareAppModal = openShareAppModal;
+  window.closeShareAppModal = closeShareAppModal;
 }

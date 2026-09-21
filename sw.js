@@ -1,5 +1,5 @@
 // Service Worker - Datos Orbet, la app de la suerte
-const CACHE_NAME = 'datos-orbet-v2';
+const CACHE_NAME = 'datos-orbet-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,16 +8,19 @@ const ASSETS_TO_CACHE = [
   './js/lotteriesConfig.js',
   './js/auth.js',
   './js/lotteries-data.js',
+  './js/cloud-sync.js',
   './js/stats-engine.js',
   './js/pyramid-engine.js',
   './js/juegoActivoEngine.js',
   './js/importer.js',
   './js/payments-wa.js',
+  './js/play-safe-engine.js',
   './js/app.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/favicon.png'
+  './icons/favicon.png',
+  './icons/qr_pagomovil_bdv.jpg'
 ];
 
 self.addEventListener('install', (event) => {

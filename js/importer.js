@@ -31,8 +31,9 @@ class LotteryImporter {
     let newResultsCount = 0;
 
     let animalList = ANIMALITOS_38_LIST;
-    if (lotto.type === 'animalitos_75') animalList = ANIMALITOS_75_LIST;
-    if (lotto.type === 'animalitos_40') animalList = ANIMALITOS_40_LIST;
+    if ((lotto.type === 'animalitos_101' || lotto.id === 'selvaplus') && typeof ANIMALITOS_101_LIST !== 'undefined') animalList = ANIMALITOS_101_LIST;
+    else if (lotto.type === 'animalitos_75') animalList = ANIMALITOS_75_LIST;
+    else if (lotto.type === 'animalitos_40') animalList = ANIMALITOS_40_LIST;
 
     lotto.schedules.forEach((timeStr) => {
       const isPM = timeStr.includes('PM');
@@ -136,7 +137,8 @@ class LotteryImporter {
         if (numVal.length === 1) numVal = numVal.padStart(2, '0');
 
         let extra = '';
-        for (const item of ANIMALITOS_75_LIST) {
+        const searchList = (typeof ANIMALITOS_101_LIST !== 'undefined') ? ANIMALITOS_101_LIST : ANIMALITOS_75_LIST;
+        for (const item of searchList) {
           if (new RegExp(`\\b${item.name}\\b`, 'i').test(trimmed) || item.num === numVal) {
             extra = item.name;
             break;

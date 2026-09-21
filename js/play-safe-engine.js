@@ -13,14 +13,11 @@ class PlaySafeEngine {
     '05:00 PM', '06:00 PM', '07:00 PM'
   ];
 
-  // Estado de la jugada en curso
+  // Estado de la jugada en curso (inicia vacío sin números predeterminados)
   static state = {
     selectedLotteryId: 'guacharoactivo',
     selectedSchedules: ['10:00 AM'],
-    selectedNumbers: [
-      { num: '34', name: 'Venado' },
-      { num: '72', name: 'Gorila' }
-    ],
+    selectedNumbers: [],
     amountPerNumber: 50,
     referenceNumber: ''
   };
@@ -35,6 +32,78 @@ class PlaySafeEngine {
     this.updatePaymentInfoCard();
     this.calculateAndRenderTotal();
     this.renderTicketsHistory();
+
+    // Actualizar periódicamente los horarios para marcar como cerrados los que entren en los 10 min
+    if (!this._scheduleTimer && typeof window !== 'undefined') {
+      this._scheduleTimer = setInterval(() => {
+        const container = document.getElementById('play-schedules-container');
+        if (container) {
+          PlaySafeEngine.renderSchedulesPills();
+          PlaySafeEngine.calculateAndRenderTotal();
+        }
+      }, 30000);
+    }
+  }
+
+  /**
+   * Genera la fecha y hora exacta de emisión del ticket en formato legible
+   * Ejemplo: "Emitido: 21/09/2026 - 10:15:32 AM"
+   */
+  static getFormattedTicketTimestamp(dateObj = new Date()) {
+    const d = dateObj;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const hoursStr = String(hours).padStart(2, '0');
+    return `Emitido: ${day}/${month}/${year} - ${hoursStr}:${minutes}:${seconds} ${ampm}`;
+  }
+
+  /**
+   * Obtiene la lista de horarios oficiales para la operadora actualmente elegida
+   */
+  static getSchedulesForCurrentLottery() {
+    if (typeof LOTERIAS_CONFIG !== 'undefined' && this.state.selectedLotteryId) {
+      const cfg = LOTERIAS_CONFIG[this.state.selectedLotteryId];
+      if (cfg && Array.isArray(cfg.schedules) && cfg.schedules.length > 0) {
+        return cfg.schedules;
+      }
+    }
+    return this.DEFAULT_SCHEDULES;
+  }
+
+  /**
+   * Convierte una cadena de horario (ej: "10:00 AM", "01:30 PM") a minutos del día (0-1439)
+   */
+  static parseScheduleToMinutes(scheduleStr) {
+    const match = String(scheduleStr || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return null;
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const ampm = match[3].toUpperCase();
+
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  }
+
+  /**
+   * Valida si un horario de sorteo está cerrado:
+   * Si la hora actual supera la hora del sorteo (o faltan menos de 10 minutos para que empiece).
+   */
+  static isScheduleClosed(scheduleStr, now = new Date()) {
+    const schedMinutes = this.parseScheduleToMinutes(scheduleStr);
+    if (schedMinutes === null) return false;
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    // Supera la hora o faltan menos de 10 minutos para que empiece
+    return (schedMinutes - currentMinutes) < 10;
   }
 
   /**
@@ -63,42 +132,87 @@ class PlaySafeEngine {
   }
 
   /**
-   * Cambia la operadora actual
+   * Cambia la operadora actual y actualiza los horarios correspondientes
    */
   static onLotteryChange(lotteryId) {
     this.state.selectedLotteryId = lotteryId;
+    this.renderSchedulesPills();
     this.calculateAndRenderTotal();
   }
 
   /**
-   * Renderiza las píldoras interactivas de horarios
+   * Renderiza las píldoras interactivas de horarios con validación de horarios cerrados (<10 min)
    */
   static renderSchedulesPills() {
     const container = document.getElementById('play-schedules-container');
     if (!container) return;
 
-    container.innerHTML = this.DEFAULT_SCHEDULES.map(time => {
-      const isSelected = this.state.selectedSchedules.includes(time);
+    const schedules = this.getSchedulesForCurrentLottery();
+
+    // Descartar automáticamente los que ya hayan cerrado de la selección activa
+    this.state.selectedSchedules = this.state.selectedSchedules.filter(time => !this.isScheduleClosed(time));
+
+    // Si todos los seleccionados se cerraron, intentar auto-seleccionar el primer horario abierto disponible
+    if (this.state.selectedSchedules.length === 0) {
+      const firstOpen = schedules.find(time => !this.isScheduleClosed(time));
+      if (firstOpen) {
+        this.state.selectedSchedules = [firstOpen];
+      }
+    }
+
+    const openCount = schedules.filter(time => !this.isScheduleClosed(time)).length;
+
+    let html = schedules.map(time => {
+      const isClosed = this.isScheduleClosed(time);
+      const isSelected = this.state.selectedSchedules.includes(time) && !isClosed;
+
+      if (isClosed) {
+        return `
+          <button type="button" class="btn-schedule-pill closed" disabled 
+            title="Sorteo cerrado (la hora supera el sorteo o faltan menos de 10 min)">
+            <span class="sched-time">${time}</span>
+            <span class="sched-badge-closed">Cerrado</span>
+          </button>
+        `;
+      }
+
       return `
         <button type="button" class="btn-schedule-pill ${isSelected ? 'active' : ''}" 
           onclick="PlaySafeEngine.toggleSchedule('${time}')">
-          ${time}
+          <span class="sched-time">${time}</span>
         </button>
       `;
     }).join('');
+
+    if (openCount === 0) {
+      html += `
+        <div class="schedules-all-closed-alert">
+          ⏳ Todos los sorteos de hoy han cerrado (los sorteos cierran 10 minutos antes). Podrás sellar jugadas para los sorteos de la próxima jornada.
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
   }
 
   /**
-   * Alterna la selección de un horario
+   * Alterna la selección de un horario validando que no esté cerrado
    */
   static toggleSchedule(time) {
+    if (this.isScheduleClosed(time)) {
+      if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+        PaymentsAndWhatsApp.showToast(`El sorteo de las ${time} ya está cerrado (menos de 10 min para iniciar).`);
+      }
+      return;
+    }
+
     const idx = this.state.selectedSchedules.indexOf(time);
     if (idx > -1) {
       if (this.state.selectedSchedules.length > 1) {
         this.state.selectedSchedules.splice(idx, 1);
       } else {
-        if (typeof PaymentsAndWhatsApp !== 'undefined') {
-          PaymentsAndWhatsApp.showToast('Debe seleccionar al menos un horario para la jugada.');
+        if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+          PaymentsAndWhatsApp.showToast('Debe mantener seleccionado al menos un horario para la jugada.');
         }
         return;
       }
@@ -116,6 +230,9 @@ class PlaySafeEngine {
     if (typeof LOTERIAS_CONFIG !== 'undefined' && this.state.selectedLotteryId) {
       const cfg = LOTERIAS_CONFIG[this.state.selectedLotteryId];
       if (cfg) {
+        if ((cfg.type === 'animalitos_101' || this.state.selectedLotteryId === 'selvaplus') && typeof ANIMALITOS_101_LIST !== 'undefined') {
+          return ANIMALITOS_101_LIST;
+        }
         if (cfg.type === 'animalitos_75' && typeof ANIMALITOS_75_LIST !== 'undefined') {
           return ANIMALITOS_75_LIST;
         }
@@ -126,6 +243,9 @@ class PlaySafeEngine {
           return ANIMALITOS_38_LIST;
         }
       }
+    }
+    if (typeof ANIMALITOS_101_LIST !== 'undefined' && this.state.selectedLotteryId === 'selvaplus') {
+      return ANIMALITOS_101_LIST;
     }
     if (typeof ANIMALITOS_75_LIST !== 'undefined') {
       return ANIMALITOS_75_LIST;
@@ -256,6 +376,23 @@ class PlaySafeEngine {
   }
 
   /**
+   * Limpia todos los números seleccionados de la jugada
+   */
+  static clearNumbers() {
+    this.state.selectedNumbers = [];
+    this.renderSelectedChips();
+    this.calculateAndRenderTotal();
+
+    // Deseleccionar botones en el modal si está abierto
+    const modalBtns = document.querySelectorAll('.animalito-modal-btn.selected');
+    modalBtns.forEach(btn => btn.classList.remove('selected'));
+
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast('Se limpiaron los números de la jugada.');
+    }
+  }
+
+  /**
    * Agrega un número ingresado desde el buscador o input rápido
    */
   static addFromSearchInput() {
@@ -299,27 +436,34 @@ class PlaySafeEngine {
     const countEl = document.getElementById('play-numbers-count');
     if (!container) return;
 
+    const len = this.state.selectedNumbers.length;
     if (countEl) {
-      const len = this.state.selectedNumbers.length;
       countEl.textContent = `${len} número${len !== 1 ? 's' : ''}`;
     }
 
-    if (this.state.selectedNumbers.length === 0) {
+    if (len === 0) {
       container.innerHTML = `
         <div class="empty-chips-msg">
-          🎯 No hay números agregados aún. Escriba o seleccione sus animalitos abajo.
+          🎯 Ningún número seleccionado aún. Escribe o selecciona tus animalitos usando el buscador o el Catálogo.
         </div>
       `;
       return;
     }
 
-    container.innerHTML = this.state.selectedNumbers.map(item => `
+    const chipsHtml = this.state.selectedNumbers.map(item => `
       <div class="selected-number-chip">
         <span class="chip-num">${item.num}</span>
         <span class="chip-name">${item.name}</span>
-        <button type="button" class="chip-remove-btn" onclick="PlaySafeEngine.removeNumber('${item.num}')" title="Quitar">✕</button>
+        <button type="button" class="chip-remove-btn" onclick="PlaySafeEngine.removeNumber('${item.num}')" title="Quitar ${item.name}">✕</button>
       </div>
     `).join('');
+
+    container.innerHTML = `
+      ${chipsHtml}
+      <button type="button" class="btn-clear-all-chips" onclick="PlaySafeEngine.clearNumbers()" title="Borrar todos los números">
+        🗑️ Limpiar todos
+      </button>
+    `;
   }
 
   static MIN_AMOUNT = 50;
@@ -377,7 +521,11 @@ class PlaySafeEngine {
     }
 
     if (breakdownEl) {
-      breakdownEl.textContent = `${numCount} número(s) × ${schedCount} horario(s) × ${amount.toFixed(2)} Bs = Total a Pagar: ${totalBs.toFixed(2)} Bs`;
+      if (numCount === 0) {
+        breakdownEl.textContent = `0 números seleccionados · ${schedCount} horario(s) · ${amount.toFixed(2)} Bs c/u (Total: 0,00 Bs)`;
+      } else {
+        breakdownEl.textContent = `${numCount} número(s) × ${schedCount} horario(s) × ${amount.toFixed(2)} Bs = Total a Pagar: ${totalBs.toFixed(2)} Bs`;
+      }
     }
 
     if (pmAmountEl) {
@@ -416,12 +564,15 @@ class PlaySafeEngine {
 
   /**
    * Construye el texto formateado del ticket para enviar por WhatsApp
+   * Incluye automáticamente la fecha y la hora exacta de generación del ticket
    */
-  static buildWhatsAppTicketMessage(refNumber) {
+  static buildWhatsAppTicketMessage(refNumber, ticketTimestamp = null) {
     let lotteryName = 'Guácharo Activo';
     if (typeof LOTERIAS_CONFIG !== 'undefined' && LOTERIAS_CONFIG[this.state.selectedLotteryId]) {
       lotteryName = LOTERIAS_CONFIG[this.state.selectedLotteryId].nombre;
     }
+
+    const timestampStr = ticketTimestamp || this.getFormattedTicketTimestamp();
 
     const todayStr = new Date().toLocaleDateString('es-VE', { 
       day: '2-digit', 
@@ -449,6 +600,7 @@ class PlaySafeEngine {
 
     return `🎟️ *TICKET DE JUGADA - DATOS ORBET* 🎟️\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🕒 *${timestampStr}*\n` +
       `🎰 *Operadora:* ${lotteryName}\n` +
       `📅 *Fecha:* ${todayStr}\n` +
       `⏰ *Horario(s):* ${schedulesList}\n` +
@@ -468,7 +620,7 @@ class PlaySafeEngine {
   }
 
   /**
-   * Procesa el envío del ticket y comprobante a través de WhatsApp
+   * Procesa el envío del ticket y comprobante a través de WhatsApp con validación estricta de horario
    */
   static submitPlaySafeTicket() {
     if (this.state.selectedNumbers.length === 0) {
@@ -477,7 +629,16 @@ class PlaySafeEngine {
     }
 
     if (this.state.selectedSchedules.length === 0) {
-      alert('Por favor seleccione al menos un horario para la jugada.');
+      alert('Por favor seleccione al menos un horario disponible y abierto para la jugada.');
+      return;
+    }
+
+    // Validación estricta: verificar que ninguno de los horarios seleccionados esté cerrado (< 10 min o superado)
+    const closed = this.state.selectedSchedules.filter(t => this.isScheduleClosed(t));
+    if (closed.length > 0) {
+      alert(`⚠️ El sorteo para el horario "${closed.join(', ')}" ya está cerrado (faltan menos de 10 minutos o ya pasó la hora).\n\nPor favor elija un horario disponible para hoy.`);
+      this.renderSchedulesPills();
+      this.calculateAndRenderTotal();
       return;
     }
 
@@ -500,8 +661,10 @@ class PlaySafeEngine {
       }
     }
 
+    // Generar fecha y hora exacta de emisión
+    const ticketTimestamp = this.getFormattedTicketTimestamp();
     const totalBs = this.calculateAndRenderTotal();
-    const message = this.buildWhatsAppTicketMessage(ref);
+    const message = this.buildWhatsAppTicketMessage(ref, ticketTimestamp);
 
     // Obtener teléfono de WhatsApp configurado
     let phone = '+584247848287';
@@ -512,9 +675,10 @@ class PlaySafeEngine {
     }
     const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-    // Guardar en historial local
+    // Guardar en historial local con timestamp exacto
     this.saveTicketToHistory({
       id: 'tkt_' + Date.now(),
+      timestamp: ticketTimestamp,
       date: new Date().toLocaleDateString('es-VE'),
       time: new Date().toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }),
       lotteryId: this.state.selectedLotteryId,
@@ -580,7 +744,7 @@ class PlaySafeEngine {
       <div class="ticket-history-card">
         <div class="ticket-history-header">
           <strong>🎟️ ${tkt.lotteryId ? tkt.lotteryId.toUpperCase() : 'JUGADA'}</strong>
-          <span class="ticket-history-date">${tkt.date} ${tkt.time}</span>
+          <span class="ticket-history-date">${tkt.timestamp || `${tkt.date} ${tkt.time}`}</span>
         </div>
         <div class="ticket-history-body">
           <div><strong>Sorteos:</strong> ${tkt.schedules.join(', ')}</div>
@@ -607,6 +771,17 @@ class PlaySafeEngine {
     if (!modal) return;
 
     const list = this.getAnimalitosList();
+    const titleEl = modal.querySelector('.modal-header h3');
+    if (titleEl) {
+      let lottoName = 'Catálogo de Animalitos';
+      if (typeof LOTERIAS_CONFIG !== 'undefined' && this.state.selectedLotteryId && LOTERIAS_CONFIG[this.state.selectedLotteryId]) {
+        lottoName = `🐾 Catálogo: ${LOTERIAS_CONFIG[this.state.selectedLotteryId].nombre} (${list.length} Figuras)`;
+      } else {
+        lottoName = `🐾 Catálogo de Animalitos (${list.length} Figuras)`;
+      }
+      titleEl.textContent = lottoName;
+    }
+
     const grid = document.getElementById('animalitos-modal-grid');
     if (grid) {
       grid.innerHTML = list.map(item => {
@@ -641,6 +816,24 @@ class PlaySafeEngine {
     } else {
       this.addNumber(cleanNum, name);
       if (btn) btn.classList.add('selected');
+    }
+  }
+
+  static openQrModal() {
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.openQrModal) {
+      PaymentsAndWhatsApp.openQrModal();
+    } else {
+      const modal = document.getElementById('bdv-qr-modal');
+      if (modal) modal.classList.add('active');
+    }
+  }
+
+  static closeQrModal() {
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.closeQrModal) {
+      PaymentsAndWhatsApp.closeQrModal();
+    } else {
+      const modal = document.getElementById('bdv-qr-modal');
+      if (modal) modal.classList.remove('active');
     }
   }
 }
