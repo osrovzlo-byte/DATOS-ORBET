@@ -398,9 +398,9 @@ class PlaySafeEngine {
 
     const pm = (settings && settings.payments && settings.payments.pagoMovil) ? settings.payments.pagoMovil : {
       bank: 'Banco de Venezuela (0102)',
-      phone: '0412-1234567',
-      ci: 'V-20.123.456',
-      holder: 'Datos Orbet Oficial'
+      phone: '0424-7848287',
+      ci: 'V-17.273.190',
+      holder: 'Oscar Omar Díaz / Orbet VIP'
     };
 
     const bankEl = document.getElementById('pm-card-bank');
@@ -409,9 +409,9 @@ class PlaySafeEngine {
     const holderEl = document.getElementById('pm-card-holder');
 
     if (bankEl) bankEl.textContent = pm.bank || 'Banco de Venezuela (0102)';
-    if (phoneEl) phoneEl.textContent = pm.phone || '0412-1234567';
-    if (ciEl) ciEl.textContent = pm.ci || 'V-20.123.456';
-    if (holderEl) holderEl.textContent = pm.holder || 'Datos Orbet VIP';
+    if (phoneEl) phoneEl.textContent = pm.phone || '0424-7848287';
+    if (ciEl) ciEl.textContent = pm.ci || 'V-17.273.190';
+    if (holderEl) holderEl.textContent = pm.holder || 'Oscar Omar Díaz / Orbet VIP';
   }
 
   /**
@@ -504,10 +504,11 @@ class PlaySafeEngine {
     const message = this.buildWhatsAppTicketMessage(ref);
 
     // Obtener teléfono de WhatsApp configurado
-    let phone = '+584121234567';
+    let phone = '+584247848287';
     if (typeof DatosOrbetDB !== 'undefined' && DatosOrbetDB.getSettings) {
       const s = DatosOrbetDB.getSettings();
       if (s && s.whatsapp && s.whatsapp.phone) phone = s.whatsapp.phone;
+      else if (s && s.whatsappNumber) phone = s.whatsappNumber;
     }
     const cleanPhone = phone.replace(/[^0-9]/g, '');
 

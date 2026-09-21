@@ -600,12 +600,12 @@
             </div>
             <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-card-phone').textContent, 'Teléfono Pago Móvil')">
               <span class="pm-lbl">📱 Teléfono:</span>
-              <strong class="pm-val" id="pm-card-phone">0412-1234567</strong>
+              <strong class="pm-val" id="pm-card-phone">0424-7848287</strong>
               <button type="button" class="btn-pm-copy">📋</button>
             </div>
             <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-card-ci').textContent, 'Cédula Pago Móvil')">
               <span class="pm-lbl">🪪 Cédula / RIF:</span>
-              <strong class="pm-val" id="pm-card-ci">V-20.123.456</strong>
+              <strong class="pm-val" id="pm-card-ci">V-17.273.190</strong>
               <button type="button" class="btn-pm-copy">📋</button>
             </div>
             <div class="pm-row" onclick="PaymentsAndWhatsApp.copyText(document.getElementById('pm-copy-amount').textContent.replace(' Bs',''), 'Monto Total')">
@@ -691,11 +691,11 @@
             </div>
             <div class="pay-row">
               <span class="pay-label">Teléfono:</span>
-              <span class="pay-val copy-highlight" id="pay-pm-phone" onclick="PaymentsAndWhatsApp.copyText('04121234567', 'Teléfono')">0412-1234567 📋</span>
+              <span class="pay-val copy-highlight" id="pay-pm-phone" onclick="PaymentsAndWhatsApp.copyText('04247848287', 'Teléfono')">0424-7848287 📋</span>
             </div>
             <div class="pay-row">
               <span class="pay-label">Cédula:</span>
-              <span class="pay-val copy-highlight" id="pay-pm-ci" onclick="PaymentsAndWhatsApp.copyText('20123456', 'Cédula')">V-20.123.456 📋</span>
+              <span class="pay-val copy-highlight" id="pay-pm-ci" onclick="PaymentsAndWhatsApp.copyText('17273190', 'Cédula')">V-17.273.190 📋</span>
             </div>
           </div>
 
@@ -719,11 +719,11 @@
             </div>
             <div class="pay-row">
               <span class="pay-label">Cuenta Ahorros:</span>
-              <span class="pay-val copy-highlight" id="pay-co-account" onclick="PaymentsAndWhatsApp.copyText('12345678900', 'Cuenta Bancolombia')">123-456789-00 📋</span>
+              <span class="pay-val copy-highlight" id="pay-co-account" onclick="PaymentsAndWhatsApp.copyText('08862783477 - 1091375151', 'Cuenta Bancolombia')">08862783477 - 1091375151 📋</span>
             </div>
             <div class="pay-row">
               <span class="pay-label">Nequi:</span>
-              <span class="pay-val copy-highlight" id="pay-co-nequi" onclick="PaymentsAndWhatsApp.copyText('3123456789', 'Nequi')">312-3456789 📋</span>
+              <span class="pay-val copy-highlight" id="pay-co-nequi" onclick="PaymentsAndWhatsApp.copyText('08862783477', 'Nequi')">08862783477 📋</span>
             </div>
           </div>
 
@@ -735,7 +735,7 @@
             </div>
             <div class="pay-row">
               <span class="pay-label">Correo Zelle:</span>
-              <span class="pay-val copy-highlight" id="pay-us-zelle" onclick="PaymentsAndWhatsApp.copyText('pagos.datosorbet@gmail.com', 'Correo Zelle')">pagos.datosorbet@gmail.com 📋</span>
+              <span class="pay-val copy-highlight" id="pay-us-zelle" onclick="PaymentsAndWhatsApp.copyText('oscar_omardiaz@hotmail.com', 'Correo Zelle')">oscar_omardiaz@hotmail.com 📋</span>
             </div>
           </div>
 
@@ -867,35 +867,35 @@
             <div style="display: flex; flex-direction: column; gap: 9px;">
               <div>
                 <label class="settings-field-label">Teléfono WhatsApp (con código país):</label>
-                <input type="text" id="cfg-wa-phone" class="date-input" placeholder="+584121234567">
+                <input type="text" id="cfg-wa-phone" class="date-input" placeholder="+584247848287" value="+584247848287">
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div>
                   <label class="settings-field-label">Pago Móvil (Teléfono y Cédula):</label>
-                  <input type="text" id="cfg-pm-info" class="date-input" placeholder="0412-1234567 / V-20123456">
+                  <input type="text" id="cfg-pm-info" class="date-input" placeholder="0424-7848287 / V-17.273.190" value="0424-7848287 / V-17.273.190">
                 </div>
                 <div>
                   <label class="settings-field-label">Pago Móvil (Banco):</label>
-                  <input type="text" id="cfg-pm-bank" class="date-input" placeholder="Banco de Venezuela (0102)">
+                  <input type="text" id="cfg-pm-bank" class="date-input" placeholder="Banco de Venezuela (0102)" value="Banco de Venezuela (0102)">
                 </div>
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div>
                   <label class="settings-field-label">Bancolombia (Cuenta Ahorros):</label>
-                  <input type="text" id="cfg-bancolombia" class="date-input" placeholder="123-456789-00">
+                  <input type="text" id="cfg-bancolombia" class="date-input" placeholder="08862783477 - 1091375151" value="08862783477 - 1091375151">
                 </div>
                 <div>
                   <label class="settings-field-label">Bancolombia (Nequi):</label>
-                  <input type="text" id="cfg-nequi" class="date-input" placeholder="312-3456789">
+                  <input type="text" id="cfg-nequi" class="date-input" placeholder="08862783477" value="08862783477">
                 </div>
               </div>
               <div>
                 <label class="settings-field-label">Zelle (Correo electrónico):</label>
-                <input type="text" id="cfg-zelle" class="date-input" placeholder="pagos.datosorbet@gmail.com">
+                <input type="text" id="cfg-zelle" class="date-input" placeholder="oscar_omardiaz@hotmail.com" value="oscar_omardiaz@hotmail.com">
               </div>
               <div>
                 <label class="settings-field-label">Binance (Pay ID):</label>
-                <input type="text" id="cfg-binance" class="date-input" placeholder="298371928">
+                <input type="text" id="cfg-binance" class="date-input" placeholder="298371928" value="298371928">
               </div>
             </div>
 

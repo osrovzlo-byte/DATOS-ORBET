@@ -1175,24 +1175,26 @@ function loadAppSettings() {
   const zelleInput = document.getElementById('cfg-zelle');
   const binanceInput = document.getElementById('cfg-binance');
 
-  if (waInput && settings.whatsapp) waInput.value = settings.whatsapp.phone || '';
+  if (waInput && settings.whatsapp) waInput.value = settings.whatsapp.phone || '+584247848287';
   if (pmInput && settings.payments && settings.payments.pagoMovil) {
-    pmInput.value = `${settings.payments.pagoMovil.phone || ''} / ${settings.payments.pagoMovil.ci || ''}`;
+    const phone = settings.payments.pagoMovil.phone || '0424-7848287';
+    const ci = settings.payments.pagoMovil.ci || 'V-17.273.190';
+    pmInput.value = `${phone} / ${ci}`;
   }
   if (pmBankInput && settings.payments && settings.payments.pagoMovil) {
-    pmBankInput.value = settings.payments.pagoMovil.bank || '';
+    pmBankInput.value = settings.payments.pagoMovil.bank || 'Banco de Venezuela (0102)';
   }
   if (banColInput && settings.payments && settings.payments.bancolombia) {
-    banColInput.value = settings.payments.bancolombia.accountNumber || '';
+    banColInput.value = settings.payments.bancolombia.accountNumber || '08862783477 - 1091375151';
   }
   if (nequiInput && settings.payments && settings.payments.bancolombia) {
-    nequiInput.value = settings.payments.bancolombia.nequi || '';
+    nequiInput.value = settings.payments.bancolombia.nequi || '08862783477';
   }
   if (zelleInput && settings.payments && settings.payments.zelle) {
-    zelleInput.value = settings.payments.zelle.email || '';
+    zelleInput.value = settings.payments.zelle.email || 'oscar_omardiaz@hotmail.com';
   }
   if (binanceInput && settings.payments && settings.payments.binance) {
-    binanceInput.value = settings.payments.binance.payId || '';
+    binanceInput.value = settings.payments.binance.payId || '298371928';
   }
 
   // Reflejar datos en las tarjetas visibles de "Pagos / WA"
@@ -1202,47 +1204,56 @@ function loadAppSettings() {
       const pmBank = document.getElementById('pay-pm-bank');
       const pmPhone = document.getElementById('pay-pm-phone');
       const pmCi = document.getElementById('pay-pm-ci');
+      const phoneVal = p.pagoMovil.phone || '0424-7848287';
+      const ciVal = p.pagoMovil.ci || 'V-17.273.190';
+
       if (pmBank) pmBank.textContent = p.pagoMovil.bank || 'Banco de Venezuela (0102)';
       if (pmPhone) {
-        pmPhone.textContent = `${p.pagoMovil.phone || '0412-1234567'} 📋`;
-        pmPhone.onclick = () => PaymentsAndWhatsApp.copyText(p.pagoMovil.phone, 'Teléfono Pago Móvil');
+        pmPhone.textContent = `${phoneVal} 📋`;
+        pmPhone.onclick = () => PaymentsAndWhatsApp.copyText(phoneVal, 'Teléfono Pago Móvil');
       }
       if (pmCi) {
-        pmCi.textContent = `${p.pagoMovil.ci || 'V-20.123.456'} 📋`;
-        pmCi.onclick = () => PaymentsAndWhatsApp.copyText(p.pagoMovil.ci, 'Cédula Pago Móvil');
+        pmCi.textContent = `${ciVal} 📋`;
+        pmCi.onclick = () => PaymentsAndWhatsApp.copyText(ciVal, 'Cédula Pago Móvil');
       }
     }
     if (p.bancoBolivares) {
       const veAcc = document.getElementById('pay-ve-account');
+      const accVal = p.bancoBolivares.accountNumber || '0134-0000-00-0000000000';
       if (veAcc) {
-        veAcc.textContent = `${p.bancoBolivares.accountNumber || '0134-0000-00-0000000000'} 📋`;
-        veAcc.onclick = () => PaymentsAndWhatsApp.copyText(p.bancoBolivares.accountNumber, 'Cuenta Banesco');
+        veAcc.textContent = `${accVal} 📋`;
+        veAcc.onclick = () => PaymentsAndWhatsApp.copyText(accVal, 'Cuenta Banesco');
       }
     }
     if (p.bancolombia) {
       const coAcc = document.getElementById('pay-co-account');
       const coNequi = document.getElementById('pay-co-nequi');
+      const accVal = p.bancolombia.accountNumber || '08862783477 - 1091375151';
+      const nequiVal = p.bancolombia.nequi || '08862783477';
+
       if (coAcc) {
-        coAcc.textContent = `${p.bancolombia.accountNumber || '123-456789-00'} 📋`;
-        coAcc.onclick = () => PaymentsAndWhatsApp.copyText(p.bancolombia.accountNumber, 'Cuenta Bancolombia');
+        coAcc.textContent = `${accVal} 📋`;
+        coAcc.onclick = () => PaymentsAndWhatsApp.copyText(accVal, 'Cuenta Bancolombia');
       }
       if (coNequi) {
-        coNequi.textContent = `${p.bancolombia.nequi || '312-3456789'} 📋`;
-        coNequi.onclick = () => PaymentsAndWhatsApp.copyText(p.bancolombia.nequi, 'Nequi');
+        coNequi.textContent = `${nequiVal} 📋`;
+        coNequi.onclick = () => PaymentsAndWhatsApp.copyText(nequiVal, 'Nequi');
       }
     }
     if (p.zelle) {
       const usZelle = document.getElementById('pay-us-zelle');
+      const zelleVal = p.zelle.email || 'oscar_omardiaz@hotmail.com';
       if (usZelle) {
-        usZelle.textContent = `${p.zelle.email || 'pagos.datosorbet@gmail.com'} 📋`;
-        usZelle.onclick = () => PaymentsAndWhatsApp.copyText(p.zelle.email, 'Correo Zelle');
+        usZelle.textContent = `${zelleVal} 📋`;
+        usZelle.onclick = () => PaymentsAndWhatsApp.copyText(zelleVal, 'Correo Zelle');
       }
     }
     if (p.binance) {
       const binId = document.getElementById('pay-binance-id');
+      const payIdVal = p.binance.payId || '298371928';
       if (binId) {
-        binId.textContent = `${p.binance.payId || '298371928'} 📋`;
-        binId.onclick = () => PaymentsAndWhatsApp.copyText(p.binance.payId, 'Binance Pay ID');
+        binId.textContent = `${payIdVal} 📋`;
+        binId.onclick = () => PaymentsAndWhatsApp.copyText(payIdVal, 'Binance Pay ID');
       }
     }
   }

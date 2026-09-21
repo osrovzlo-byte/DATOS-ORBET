@@ -540,22 +540,22 @@ class DatosOrbetDB {
           phone: '0424-7848287',
           ci: 'V-17.273.190',
           idCard: 'V-17.273.190',
-          holder: 'Orbet Suerte VIP'
+          holder: 'Oscar Omar Díaz / Orbet VIP'
         },
         bancoBolivares: {
           bank: 'Banesco',
           accountNumber: '0134-0000-00-0000000000',
-          holder: 'Orbet Suerte VIP'
+          holder: 'Oscar Omar Díaz / Orbet VIP'
         },
         bancolombia: {
           accountNumber: '08862783477 - 1091375151',
           accountType: 'Ahorros',
-          holder: 'Orbet Servicios de Suerte',
-          nequi: '312-3456789'
+          holder: 'Oscar Omar Díaz',
+          nequi: '08862783477'
         },
         zelle: {
-          email: 'pagos.datosorbet@gmail.com',
-          holder: 'Orbet Inversiones LLC'
+          email: 'oscar_omardiaz@hotmail.com',
+          holder: 'Oscar Omar Díaz'
         },
         binance: {
           payId: '298371928',
@@ -571,23 +571,91 @@ class DatosOrbetDB {
       return defaultSettings;
     }
 
-    // Migración automática de valores ficticios antiguos a los datos bancarios reales
-    if (parsed.payments && parsed.payments.pagoMovil) {
-      if (parsed.payments.pagoMovil.phone === '0412-1234567') {
-        parsed.payments.pagoMovil.phone = '0424-7848287';
-      }
-      if (parsed.payments.pagoMovil.ci === 'V-20123456' || parsed.payments.pagoMovil.ci === 'V-20.123.456') {
-        parsed.payments.pagoMovil.ci = 'V-17.273.190';
-      }
+    // Migración automática y limpieza de valores ficticios o genéricos anteriores
+    let hasMigrated = false;
+
+    if (!parsed.whatsapp) {
+      parsed.whatsapp = { ...defaultSettings.whatsapp };
+      hasMigrated = true;
     }
-    if (parsed.payments && parsed.payments.bancolombia) {
-      if (parsed.payments.bancolombia.accountNumber === '123-456789-00') {
-        parsed.payments.bancolombia.accountNumber = '08862783477 - 1091375151';
-      }
-    }
-    if (parsed.whatsapp && parsed.whatsapp.phone === '+584121234567') {
+    if (!parsed.whatsapp.phone || parsed.whatsapp.phone === '+584121234567' || parsed.whatsapp.phone === '584121234567') {
       parsed.whatsapp.phone = '+584247848287';
       parsed.whatsappNumber = '+584247848287';
+      hasMigrated = true;
+    }
+
+    if (!parsed.payments) {
+      parsed.payments = { ...defaultSettings.payments };
+      hasMigrated = true;
+    }
+
+    // 1. Pago Móvil
+    if (!parsed.payments.pagoMovil) {
+      parsed.payments.pagoMovil = { ...defaultSettings.payments.pagoMovil };
+      hasMigrated = true;
+    } else {
+      const pm = parsed.payments.pagoMovil;
+      if (!pm.phone || pm.phone === '0412-1234567' || pm.phone === '04121234567') {
+        pm.phone = '0424-7848287';
+        hasMigrated = true;
+      }
+      if (!pm.ci || pm.ci === 'V-20123456' || pm.ci === 'V-20.123.456' || pm.ci === '20123456') {
+        pm.ci = 'V-17.273.190';
+        pm.idCard = 'V-17.273.190';
+        hasMigrated = true;
+      }
+      if (!pm.bank || pm.bank.includes('0102')) {
+        pm.bank = 'Banco de Venezuela (0102)';
+      }
+      if (!pm.holder || pm.holder === 'Orbet Suerte VIP') {
+        pm.holder = 'Oscar Omar Díaz / Orbet VIP';
+      }
+    }
+
+    // 2. Bancolombia y Nequi
+    if (!parsed.payments.bancolombia) {
+      parsed.payments.bancolombia = { ...defaultSettings.payments.bancolombia };
+      hasMigrated = true;
+    } else {
+      const bc = parsed.payments.bancolombia;
+      if (!bc.accountNumber || bc.accountNumber === '123-456789-00' || bc.accountNumber === '12345678900') {
+        bc.accountNumber = '08862783477 - 1091375151';
+        hasMigrated = true;
+      }
+      if (!bc.nequi || bc.nequi === '312-3456789' || bc.nequi === '3123456789') {
+        bc.nequi = '08862783477';
+        hasMigrated = true;
+      }
+      if (!bc.holder || bc.holder === 'Orbet Servicios de Suerte') {
+        bc.holder = 'Oscar Omar Díaz';
+      }
+    }
+
+    // 3. Zelle
+    if (!parsed.payments.zelle) {
+      parsed.payments.zelle = { ...defaultSettings.payments.zelle };
+      hasMigrated = true;
+    } else {
+      const z = parsed.payments.zelle;
+      if (!z.email || z.email === 'pagos.datosorbet@gmail.com' || z.email.includes('datosorbet')) {
+        z.email = 'oscar_omardiaz@hotmail.com';
+        hasMigrated = true;
+      }
+      if (!z.holder || z.holder === 'Orbet Inversiones LLC') {
+        z.holder = 'Oscar Omar Díaz';
+      }
+    }
+
+    // 4. Binance Pay ID
+    if (!parsed.payments.binance) {
+      parsed.payments.binance = { ...defaultSettings.payments.binance };
+      hasMigrated = true;
+    } else {
+      const bn = parsed.payments.binance;
+      if (!bn.payId || bn.payId === '12345678') {
+        bn.payId = '298371928';
+        hasMigrated = true;
+      }
     }
 
     // Asegurar estructura completa combinando con valores por defecto
@@ -624,6 +692,10 @@ class DatosOrbetDB {
         }
       }
     };
+
+    if (hasMigrated) {
+      this.saveSettings(s);
+    }
 
     return s;
   }

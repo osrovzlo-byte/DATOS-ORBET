@@ -5,10 +5,13 @@ class PaymentsAndWhatsApp {
   /**
    * Abre la conversación de WhatsApp con el mensaje predeterminado
    */
-  static openWhatsApp(customMsg = null) {
-    const settings = DatosOrbetDB.getSettings();
-    const phone = settings.whatsapp ? settings.whatsapp.phone.replace(/[^0-9]/g, '') : '584121234567';
-    const message = customMsg || (settings.whatsapp ? settings.whatsapp.message : '¡Hola Datos Orbet! Deseo adquirir sus servicios y suscripción VIP de la suerte.');
+    const settings = (typeof DatosOrbetDB !== 'undefined' && DatosOrbetDB.getSettings) 
+      ? DatosOrbetDB.getSettings() 
+      : null;
+    const phone = (settings && settings.whatsapp && settings.whatsapp.phone) 
+      ? settings.whatsapp.phone.replace(/[^0-9]/g, '') 
+      : '584247848287';
+    const message = customMsg || (settings && settings.whatsapp ? settings.whatsapp.message : '¡Hola Datos Orbet! Deseo adquirir sus servicios y suscripción VIP de la suerte.');
 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
