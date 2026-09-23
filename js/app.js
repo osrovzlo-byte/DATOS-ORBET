@@ -999,60 +999,52 @@ function renderUsersListUI() {
       ? '<span class="badge-sub-admin">♾️ Ilimitado</span>'
       : `<span class="${subStatus.badgeClass}">${subStatus.isExpired ? '🔴 Vencida' : '📅 ' + subStatus.label}</span>`;
 
-    // Visualización clara y completa de IP para Administrador y Clientes VIP
-    let ipDisplayHtml = '';
+    // Visualización de Dispositivo Vinculado (UUID) para Administrador y Clientes VIP
+    let deviceDisplayHtml = '';
     if (isMaster) {
-      const activeIp = user.lastLoginIp || user.registeredIp || AuthManager.cachedIp || 'Detectando IP...';
       const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('es-VE') : 'Sesión activa';
-      ipDisplayHtml = `
+      deviceDisplayHtml = `
         <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <span class="user-ip-admin-active">
-              🌐 IP Conectada: <code>${activeIp}</code>
-              <span class="user-ip-pill-online">🟢 En Línea</span>
+            <span class="user-device-admin-active">
+              📱 Dispositivo: <code>Acceso Maestro Multi-Equipo</code>
+              <span class="user-ip-pill-online">🟢 Activo</span>
             </span>
           </div>
           <span style="font-size: 0.71rem; color: #64748b;">
-            🕒 Última conexión: <strong>${lastLoginTime}</strong> | Acceso maestro sin restricción
+            🕒 Última conexión: <strong>${lastLoginTime}</strong> | Acceso maestro sin restricción de equipo
           </span>
         </div>
       `;
     } else {
-      const hasBoundIp = !!user.registeredIp;
-      const boundIp = user.registeredIp;
-      const lastIp = user.lastLoginIp;
+      const hasBoundDevice = !!user.dispositivo_vinculado;
+      const boundDevice = user.dispositivo_vinculado;
       const lastLoginTime = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('es-VE') : null;
 
-      if (hasBoundIp) {
-        ipDisplayHtml = `
+      if (hasBoundDevice) {
+        const shortUuid = boundDevice.length > 20 ? `${boundDevice.substring(0, 16)}...` : boundDevice;
+        deviceDisplayHtml = `
           <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <span class="user-ip-bound">
-                🌐 IP Vinculada: <code>${boundIp}</code>
+              <span class="user-device-bound" title="UUID Completo: ${boundDevice}">
+                📱 Dispositivo Vinculado: <code>${shortUuid}</code>
               </span>
-              <button type="button" class="btn-user-action-sm btn-release-ip-btn" onclick="releaseUserIPAction('${user.id}')" title="Liberar IP para permitir cambio de red o teléfono">
-                🔄 Liberar
-              </button>
-              <button type="button" class="btn-user-action-sm" onclick="assignUserIPPrompt('${user.id}', '${user.username}', '${boundIp}')" title="Cambiar dirección IP manualmente">
-                ✏️ Cambiar
+              <button type="button" class="btn-user-action-sm btn-release-device-btn" onclick="releaseUserDeviceAction('${user.id}', '${user.username}')" title="Liberar dispositivo para permitir nuevo equipo en caso de pérdida o cambio">
+                🔄 Liberar Dispositivo
               </button>
             </div>
             ${lastLoginTime ? `<span style="font-size: 0.71rem; color: #64748b;">🕒 Último ingreso: <strong>${lastLoginTime}</strong></span>` : ''}
-            ${lastIp && lastIp !== boundIp ? `<span style="font-size: 0.71rem; color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 4px;">⚠️ Último intento desde: ${lastIp}</span>` : ''}
           </div>
         `;
       } else {
-        ipDisplayHtml = `
+        deviceDisplayHtml = `
           <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <span class="user-ip-unbound">
-                🌐 IP: <em>Esperando 1er inicio de sesión para vincular</em>
+              <span class="user-device-unbound">
+                📱 Dispositivo: <em>Disponible para vincular en 1er acceso</em>
               </span>
-              <button type="button" class="btn-user-action-sm" onclick="assignUserIPPrompt('${user.id}', '${user.username}', '')" title="Pre-asignar IP autorizada">
-                ➕ Asignar IP
-              </button>
             </div>
-            ${lastIp ? `<span style="font-size: 0.71rem; color: #64748b;">📶 Última IP detectada: <code>${lastIp}</code> ${lastLoginTime ? `(${lastLoginTime})` : ''}</span>` : ''}
+            <span style="font-size: 0.71rem; color: #059669;">✨ El próximo equipo que inicie sesión con este usuario quedará registrado como su dispositivo exclusivo.</span>
           </div>
         `;
       }
@@ -1086,7 +1078,7 @@ function renderUsersListUI() {
             <button type="button" class="btn-user-action-sm" onclick="changeUserPasswordPrompt('${user.id}', '${user.username}')" title="Cambiar clave">✏️</button>
           </div>
           <div class="user-cred-row" style="margin-top: 6px;">
-            ${ipDisplayHtml}
+            ${deviceDisplayHtml}
           </div>
         </div>
 
@@ -1104,7 +1096,7 @@ function renderUsersListUI() {
           </div>
         ` : `
           <div class="user-item-actions">
-            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Cuenta maestra del sistema (Sin límite de IP ni fecha de vencimiento)</span>
+            <span style="font-size:0.75rem; color:#64748b; font-style:italic;">Cuenta maestra del sistema (Sin límite de equipo ni fecha de vencimiento)</span>
           </div>
         `}
       </div>
@@ -1153,17 +1145,27 @@ function toggleUserStatusAction(userId) {
   }
 }
 
-function releaseUserIPAction(userId) {
-  if (!confirm('¿Desea liberar la IP de este usuario? Al hacerlo, el cliente podrá iniciar sesión desde su nueva red o dispositivo y quedará autorizada.')) {
+function releaseUserDeviceAction(userId, username) {
+  const displayUser = username || 'este usuario';
+  if (!confirm(`¿Desea liberar el dispositivo vinculado de "${displayUser}"?\n\nAl confirmar, el campo "dispositivo_vinculado" se establecerá como nulo/vacío y el cliente podrá vincular un nuevo equipo en su próximo inicio de sesión.`)) {
     return;
   }
-  const res = AuthManager.releaseUserIP(userId);
+  const res = AuthManager.releaseUserDevice(userId);
   if (res.success) {
     renderUsersListUI();
-    PaymentsAndWhatsApp.showToast(res.message);
+    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
+      PaymentsAndWhatsApp.showToast(res.message);
+    } else {
+      alert(res.message);
+    }
   } else {
     alert(res.message);
   }
+}
+
+// Retrocompatibilidad
+function releaseUserIPAction(userId) {
+  releaseUserDeviceAction(userId);
 }
 
 function assignUserIPPrompt(userId, username, currentIp = '') {
@@ -1338,17 +1340,7 @@ function loadAppSettings() {
 }
 
 async function refreshAdminIpDisplay() {
-  const el = document.getElementById('admin-detected-ip-val');
-  if (el) el.textContent = 'Consultando IP...';
-  if (typeof AuthManager !== 'undefined') {
-    const ip = await AuthManager.getClientIP(true);
-    if (el) el.textContent = ip || 'No detectada';
-    await AuthManager.updateCurrentSessionIp();
-    renderUsersListUI();
-    if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
-      PaymentsAndWhatsApp.showToast(`IP Conectada: ${ip}`);
-    }
-  }
+  renderUsersListUI();
 }
 
 function openSettingsModal() {
@@ -1369,9 +1361,7 @@ function openSettingsModal() {
   if (modal) {
     modal.classList.add('active');
     loadAppSettings();
-    if (typeof refreshAdminIpDisplay === 'function') {
-      refreshAdminIpDisplay();
-    }
+    renderUsersListUI();
   }
 }
 
@@ -1713,4 +1703,6 @@ if (typeof window !== 'undefined') {
   window.toggleShareDrawer = toggleShareDrawer;
   window.openShareAppModal = openShareAppModal;
   window.closeShareAppModal = closeShareAppModal;
+  window.releaseUserDeviceAction = releaseUserDeviceAction;
+  window.releaseUserIPAction = releaseUserIPAction;
 }

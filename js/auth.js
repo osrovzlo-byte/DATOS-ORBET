@@ -9,8 +9,51 @@ class AuthManager {
   static USERS_KEY = 'datos_orbet_users_v2';
   static DELETED_USERS_KEY = 'datos_orbet_deleted_users_v1';
   static DEVICE_KEY = 'datos_orbet_device_v1';
+  static DEVICE_UUID_KEY = 'datos_orbet_device_uuid_v1';
   static cachedIp = null;
   static ipFetchPromise = null;
+
+  /**
+   * Genera un UUID v4 criptográficamente seguro
+   */
+  static generateUUID() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      try {
+        return crypto.randomUUID();
+      } catch (_) {}
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  /**
+   * Obtiene o genera de forma persistente el UUID único de este dispositivo (Device ID)
+   */
+  static getOrCreateLocalDeviceUUID() {
+    try {
+      let uuid = localStorage.getItem(this.DEVICE_UUID_KEY);
+      if (!uuid) {
+        uuid = this.generateUUID();
+        localStorage.setItem(this.DEVICE_UUID_KEY, uuid);
+      }
+      return uuid;
+    } catch (_) {
+      return this.generateUUID();
+    }
+  }
+
+  /**
+   * Captura el UUID local almacenado en este equipo (null si no existe)
+   */
+  static getLocalDeviceUUID() {
+    try {
+      return localStorage.getItem(this.DEVICE_UUID_KEY) || null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /**
    * Normaliza cadenas para comparación insensible a mayúsculas, minúsculas, acentos y espacios
@@ -248,7 +291,7 @@ class AuthManager {
       role: 'admin',
       status: 'active',
       expiresAt: '2099-12-31',
-      registeredIp: null,
+      dispositivo_vinculado: null,
       createdAt: '2026-09-01'
     },
     {
@@ -259,7 +302,7 @@ class AuthManager {
       role: 'vip',
       status: 'active',
       expiresAt: '2026-10-21',
-      registeredIp: null,
+      dispositivo_vinculado: null,
       createdAt: '2026-09-21'
     }
   ];
@@ -306,6 +349,18 @@ class AuthManager {
       this.saveUsers(users);
     }
 
+    // Migración transparente: Garantizar que todos los usuarios tengan campo dispositivo_vinculado
+    let hasMigration = false;
+    users.forEach(u => {
+      if (u.dispositivo_vinculado === undefined) {
+        u.dispositivo_vinculado = null;
+        hasMigration = true;
+      }
+    });
+    if (hasMigration) {
+      this.saveUsers(users);
+    }
+
     return users;
   }
 
@@ -318,7 +373,7 @@ class AuthManager {
   }
 
   /**
-   * Agrega un nuevo usuario VIP con fecha de suscripción y control de IP
+   * Agrega un nuevo usuario VIP con fecha de suscripción y control de dispositivo
    */
   static addUser(username, password, name = '', role = 'vip', expiresAt = null) {
     const cleanUser = String(username || '').trim();
@@ -354,8 +409,7 @@ class AuthManager {
       role: role || 'vip',
       status: 'active',
       expiresAt: expiryDate,
-      registeredIp: null, // Se fijará en su primer inicio de sesión
-      lastLoginIp: null,
+      dispositivo_vinculado: null, // Se vinculará con UUID único en su primer inicio de sesión
       lastLoginAt: null,
       createdAt: this.getTodayDateStr()
     };
@@ -416,19 +470,32 @@ class AuthManager {
   }
 
   /**
-   * Libera la IP registrada de un usuario VIP para permitir cambiar de dispositivo/red
+   * Mecanismo de Liberación: Establece dispositivo_vinculado como nulo para permitir
+   * que el usuario registre un nuevo equipo en caso de pérdida, cambio o daño
    */
-  static releaseUserIP(userId) {
+  static releaseUserDevice(userId) {
     const users = this.getUsers();
-    const target = users.find(u => u.id === userId || u.username.toLowerCase() === String(userId).toLowerCase());
+    const normTarget = this.normalizeText(userId);
+    const target = users.find(u => u.id === userId || this.normalizeText(u.username) === normTarget);
     if (!target) return { success: false, message: 'Usuario no encontrado.' };
 
-    target.registeredIp = null;
+    target.dispositivo_vinculado = null;
+    if (target.registeredIp) target.registeredIp = null;
     this.saveUsers(users);
+
+    if (typeof CloudSync !== 'undefined' && CloudSync.syncUsersToCloud) {
+      try { CloudSync.syncUsersToCloud(users); } catch (_) {}
+    }
+
     return { 
       success: true, 
-      message: `IP liberada para "${target.username}". El usuario podrá iniciar sesión desde su nueva red o dispositivo.` 
+      message: `Dispositivo liberado para "${target.username}". El usuario podrá vincular su nuevo equipo en su próximo inicio de sesión.` 
     };
+  }
+
+  // Alias para retrocompatibilidad
+  static releaseUserIP(userId) {
+    return this.releaseUserDevice(userId);
   }
 
   /**
@@ -474,25 +541,27 @@ class AuthManager {
   }
 
   /**
-   * Asigna, actualiza o libera manualmente la IP autorizada de un usuario
+   * Asigna, actualiza o libera manualmente el identificador de dispositivo de un usuario
    */
-  static setUserIP(userId, newIp) {
+  static setUserDevice(userId, newDeviceId) {
     const users = this.getUsers();
     const normTarget = this.normalizeText(userId);
     const target = users.find(u => u.id === userId || this.normalizeText(u.username) === normTarget);
     if (!target) return { success: false, message: 'Usuario no encontrado.' };
 
-    const cleanIp = String(newIp || '').trim();
-    target.registeredIp = cleanIp || null;
-    if (cleanIp) {
-      target.lastLoginIp = cleanIp;
-      target.lastLoginAt = new Date().toISOString();
-    }
+    const cleanDev = String(newDeviceId || '').trim();
+    target.dispositivo_vinculado = cleanDev || null;
+    target.lastLoginAt = new Date().toISOString();
     this.saveUsers(users);
     return {
       success: true,
-      message: cleanIp ? `IP "${cleanIp}" asignada correctamente a ${target.username}.` : `IP liberada para ${target.username}.`
+      message: cleanDev ? `Dispositivo vinculado a "${target.username}".` : `Dispositivo liberado para "${target.username}".`
     };
+  }
+
+  // Alias retrocompatible
+  static setUserIP(userId, newIp) {
+    return this.setUserDevice(userId, newIp);
   }
 
   /**
@@ -584,9 +653,9 @@ class AuthManager {
   }
 
   /**
-   * Intenta iniciar sesión con usuario, contraseña y validación estricta de IP única
+   * Intenta iniciar sesión con usuario, contraseña y validación estricta por Identificador Único de Dispositivo (UUID)
    */
-  static login(username, password, remember = true, clientIp = null) {
+  static login(username, password, remember = true) {
     // 1. Ejecutar reseteo de vencidos primero
     this.checkExpirations();
 
@@ -603,7 +672,7 @@ class AuthManager {
 
     const normInput = this.normalizeText(cleanUser);
 
-    // Comprobación de superusuario maestro admin (siempre tiene acceso sin restricción de IP)
+    // Comprobación de superusuario maestro admin (siempre tiene acceso sin restricción de dispositivo)
     const isMasterAdmin = (normInput === 'admin' && cleanPass === 'orbet2026');
 
     // 2. Buscar en el registro de usuarios con tolerancia de mayúsculas/minúsculas y acentos
@@ -642,43 +711,48 @@ class AuthManager {
         };
       }
 
-      // 3. Captura y Validación de IP (Tanto Administrador como VIPs)
-      const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
       const isAdminUser = (matchedUser.role === 'admin' || this.normalizeText(matchedUser.username) === 'admin');
 
+      // 3. Validación de Identificador Único de Dispositivo (Device ID / UUID)
       if (isAdminUser) {
-        // ADMINISTRADOR: Guardar su IP activa de conexión (sin restringirlo a una única IP)
-        matchedUser.registeredIp = detectedIp;
-        matchedUser.lastLoginIp = detectedIp;
+        // ADMINISTRADOR: Acceso multi-dispositivo sin bloqueo
+        const devUUID = this.getOrCreateLocalDeviceUUID();
         matchedUser.lastLoginAt = new Date().toISOString();
         this.saveUsers(users);
       } else {
-        // CLIENTES VIP: Validación estricta de IP única (Anti-compartición)
-        if (!matchedUser.registeredIp) {
-          // Primer inicio de sesión: se vincula a esta IP/dispositivo automáticamente
-          matchedUser.registeredIp = detectedIp;
-          matchedUser.lastLoginIp = detectedIp;
+        // CLIENTES VIP:
+        if (!matchedUser.dispositivo_vinculado) {
+          // PRIMER ACCESO (VINCULACIÓN): Generar UUID seguro y persistir localmente y en base de datos
+          const localUUID = this.getOrCreateLocalDeviceUUID();
+          matchedUser.dispositivo_vinculado = localUUID;
           matchedUser.lastLoginAt = new Date().toISOString();
           this.saveUsers(users);
-        } else if (matchedUser.registeredIp !== detectedIp) {
-          // Intento de inicio desde OTRA IP / OTRO dispositivo
-          return {
-            success: false,
-            reason: 'ip_mismatch',
-            username: matchedUser.username,
-            registeredIp: matchedUser.registeredIp,
-            detectedIp: detectedIp,
-            message: `🚫 Acceso bloqueado por seguridad: Esta cuenta VIP ya está vinculada a otra dirección IP o dispositivo (${matchedUser.registeredIp}). No se permite compartir cuentas.`
-          };
+
+          // Sincronizar a la nube si está disponible
+          if (typeof CloudSync !== 'undefined' && CloudSync.syncUsersToCloud) {
+            try { CloudSync.syncUsersToCloud(users); } catch (_) {}
+          }
         } else {
-          // Misma IP registrada: actualizar timestamp
-          matchedUser.lastLoginIp = detectedIp;
+          // ACCESOS FUTUROS (VALIDACIÓN): Capturar UUID local y comparar con dispositivo_vinculado
+          const localUUID = this.getLocalDeviceUUID();
+          if (!localUUID || localUUID !== matchedUser.dispositivo_vinculado) {
+            // BLOQUEO INMEDIATO:
+            return {
+              success: false,
+              reason: 'device_mismatch',
+              username: matchedUser.username,
+              dispositivo_vinculado: matchedUser.dispositivo_vinculado,
+              message: 'Acceso denegado: Este usuario ya está registrado en otro dispositivo'
+            };
+          }
+
+          // UUID coincide: Dispositivo autorizado
           matchedUser.lastLoginAt = new Date().toISOString();
           this.saveUsers(users);
         }
       }
 
-      // Credenciales y validaciones correctas -> Iniciar Sesión
+      // Credenciales y dispositivo correctos -> Iniciar Sesión
       const session = {
         token: 'orbet_token_' + Date.now(),
         userId: matchedUser.id,
@@ -686,8 +760,7 @@ class AuthManager {
         name: matchedUser.name || matchedUser.username,
         role: matchedUser.role || 'vip',
         expiresAt: matchedUser.expiresAt,
-        registeredIp: matchedUser.registeredIp,
-        lastLoginIp: detectedIp,
+        dispositivo_vinculado: matchedUser.dispositivo_vinculado || this.getLocalDeviceUUID(),
         remember: !!remember,
         timestamp: Date.now()
       };
@@ -701,7 +774,7 @@ class AuthManager {
     }
 
     if (isMasterAdmin) {
-      const detectedIp = clientIp || this.cachedIp || ('DISP-' + this.getDeviceIdentifier().substring(0, 12));
+      const devUUID = this.getOrCreateLocalDeviceUUID();
       const session = {
         token: 'orbet_token_' + Date.now(),
         userId: 'usr_admin_master',
@@ -709,8 +782,7 @@ class AuthManager {
         name: 'Administrador Principal',
         role: 'admin',
         expiresAt: '2099-12-31',
-        registeredIp: detectedIp,
-        lastLoginIp: detectedIp,
+        dispositivo_vinculado: devUUID,
         remember: !!remember,
         timestamp: Date.now()
       };
@@ -719,8 +791,6 @@ class AuthManager {
       const users = this.getUsers();
       const adminUser = users.find(u => this.normalizeText(u.username) === 'admin');
       if (adminUser) {
-        adminUser.registeredIp = detectedIp;
-        adminUser.lastLoginIp = detectedIp;
         adminUser.lastLoginAt = new Date().toISOString();
         this.saveUsers(users);
       }
@@ -757,51 +827,10 @@ class AuthManager {
   }
 
   /**
-   * Actualiza en vivo la IP de la sesión conectada en los registros y en la interfaz
+   * Método mantenido para compatibilidad hacia atrás
    */
   static async updateCurrentSessionIp() {
-    const session = this.getCurrentUser();
-    if (!session) return;
-    try {
-      const ip = await this.getClientIP();
-      if (!ip) return;
-
-      // Actualizar sesión activa
-      session.lastLoginIp = ip;
-      if (!session.registeredIp) {
-        session.registeredIp = ip;
-      }
-      localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-
-      // Actualizar registro en lista de usuarios
-      const users = this.getUsers();
-      const user = users.find(u => this.normalizeText(u.username) === this.normalizeText(session.username));
-      if (user) {
-        let changed = false;
-        if (user.lastLoginIp !== ip) {
-          user.lastLoginIp = ip;
-          changed = true;
-        }
-        if (!user.registeredIp) {
-          user.registeredIp = ip;
-          changed = true;
-        }
-        user.lastLoginAt = new Date().toISOString();
-        if (changed) {
-          this.saveUsers(users);
-        }
-      }
-
-      // Actualizar banner en vivo del admin si está presente
-      const bannerEl = document.getElementById('admin-detected-ip-val');
-      if (bannerEl) {
-        bannerEl.textContent = ip;
-      }
-
-      if (typeof renderUsersListUI === 'function') {
-        renderUsersListUI();
-      }
-    } catch (_) {}
+    return true;
   }
 
   /**
@@ -840,12 +869,9 @@ class AuthManager {
     if (this.isAuthenticated()) {
       authOverlay.classList.add('hidden');
       authOverlay.style.display = 'none';
-      // Detectar y actualizar IP de la sesión conectada
-      this.updateCurrentSessionIp().catch(() => {});
     } else {
       authOverlay.classList.remove('hidden');
       authOverlay.style.display = 'flex';
-      this.getClientIP().catch(() => {});
     }
   }
 
@@ -867,7 +893,7 @@ class AuthManager {
 }
 
 /**
- * Función global de envío para el formulario de inicio de sesión con soporte de IP y WhatsApp CTA
+ * Función global de envío para el formulario de inicio de sesión con soporte de Device ID y WhatsApp CTA
  */
 async function handleAuthSubmit(event) {
   if (event) {
@@ -891,10 +917,8 @@ async function handleAuthSubmit(event) {
   }
 
   try {
-    // Obtener IP pública en tiempo real
-    const clientIp = await AuthManager.getClientIP();
-
-    const res = AuthManager.login(username, password, remember, clientIp);
+    // Validación directa por credenciales y UUID de dispositivo (Sin demoras de red por IP)
+    const res = AuthManager.login(username, password, remember);
 
     if (res.success) {
       if (errorMsg) {
@@ -909,7 +933,6 @@ async function handleAuthSubmit(event) {
 
       // Actualizar botón de ajustes según rol (Solo Admin)
       AuthManager.updateAdminUIControls();
-      AuthManager.updateCurrentSessionIp().catch(() => {});
 
       if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
         PaymentsAndWhatsApp.showToast('¡Bienvenido a Datos Orbet!');
@@ -942,8 +965,8 @@ async function handleAuthSubmit(event) {
         let waMsg = `Hola, necesito asistencia con el acceso a mi cuenta VIP en Datos Orbet.`;
         if (res.reason === 'expired') {
           waMsg = `Hola, deseo renovar mi suscripción VIP en Datos Orbet para el usuario: "${username}".`;
-        } else if (res.reason === 'ip_mismatch') {
-          waMsg = `Hola, mi cuenta VIP "${username}" en Datos Orbet tiene bloqueo por cambio de IP/dispositivo. Solicito autorización o liberación de IP por favor.`;
+        } else if (res.reason === 'device_mismatch') {
+          waMsg = `Hola, mi cuenta VIP "${username}" en Datos Orbet aparece registrada en otro dispositivo. Solicito la liberación de mi equipo por favor.`;
         } else if (res.reason === 'user_not_found') {
           waMsg = `Hola, deseo contratar una suscripción VIP en Datos Orbet.`;
         }

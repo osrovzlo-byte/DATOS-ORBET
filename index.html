@@ -956,20 +956,17 @@
               Cree accesos con claves independientes para cada cliente VIP. Podrá activar, suspender o eliminarlos cuando lo desee.
             </p>
 
-            <!-- MONITOR EN VIVO DE IP DE CONEXIÓN ACTUAL -->
-            <div class="admin-ip-status-banner">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.25rem;">📡</span>
+            <!-- SEGURIDAD POR IDENTIFICADOR ÚNICO DE DISPOSITIVO (UUID) -->
+            <div class="admin-ip-status-banner" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.35rem;">📱</span>
                 <div>
-                  <div style="font-size: 0.72rem; color: #475569; font-weight: 700; text-transform: uppercase;">Tu IP Conectada Ahora (Admin):</div>
-                  <div style="font-size: 0.88rem; font-weight: 800; color: #0284c7; margin-top: 2px;">
-                    <code id="admin-detected-ip-val" class="admin-ip-code">Detectando IP...</code>
+                  <div style="font-size: 0.73rem; color: #166534; font-weight: 800; text-transform: uppercase;">Control de Acceso por Dispositivo Único (UUID):</div>
+                  <div style="font-size: 0.8rem; font-weight: 600; color: #15803d; margin-top: 2px;">
+                    Validación estricta por equipo exclusivo sin bloqueos por cambio de red móvil (Wi-Fi ⇄ Datos).
                   </div>
                 </div>
               </div>
-              <button type="button" class="btn-refresh-ip" onclick="refreshAdminIpDisplay()" title="Volver a consultar IP pública">
-                🔄 Refrescar IP
-              </button>
             </div>
 
             <!-- Formulario para agregar nuevo usuario -->

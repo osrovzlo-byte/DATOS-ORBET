@@ -47,7 +47,7 @@
       "role": "admin",
       "status": "active",
       "expiresAt": "2099-12-31",
-      "registeredIp": null,
+      "dispositivo_vinculado": null,
       "createdAt": "2026-09-01"
     },
     {
@@ -58,7 +58,7 @@
       "role": "vip",
       "status": "active",
       "expiresAt": "2026-10-21",
-      "registeredIp": null,
+      "dispositivo_vinculado": null,
       "createdAt": "2026-09-21"
     }
   ]

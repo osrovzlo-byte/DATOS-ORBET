@@ -87,17 +87,18 @@ class CloudSync {
           usersUpdated = true;
           hasChanges = true;
         } else {
-          // El usuario ya existe localmente: actualizar datos clave respetando su IP vinculada si ya tenía una
+          // El usuario ya existe localmente: actualizar datos clave respetando su dispositivo vinculado si ya tenía uno
           const local = localUsers[existingIdx];
           const shouldUpdate = local.password !== cUser.password || 
                               local.status !== cUser.status || 
                               local.expiresAt !== cUser.expiresAt;
-          
+
           if (shouldUpdate) {
             localUsers[existingIdx] = {
               ...cUser,
-              registeredIp: local.registeredIp || cUser.registeredIp || null,
-              lastLoginIp: local.lastLoginIp || cUser.lastLoginIp || null
+              dispositivo_vinculado: (local.dispositivo_vinculado !== undefined && local.dispositivo_vinculado !== null) 
+                ? local.dispositivo_vinculado 
+                : (cUser.dispositivo_vinculado || null)
             };
             usersUpdated = true;
             hasChanges = true;
