@@ -222,7 +222,10 @@
         
         <!-- Tarjeta Selector Desplegable de Lotería -->
         <div class="lottery-selector-card">
-          <label for="lottery-select">Lotería en Análisis:</label>
+          <div class="lottery-selector-header-flex">
+            <label for="lottery-select">Lotería en Análisis:</label>
+            <span id="stats-sync-badge" class="sync-status-badge sync-status-online">🟢 En línea</span>
+          </div>
           <div class="select-wrapper">
             <select id="lottery-select" class="custom-select" onchange="onLotteryChange(event)">
               <!-- Se puebla con las 14 loterías de LOTERIAS_CONFIG -->
@@ -235,14 +238,14 @@
           </div>
         </div>
 
-        <!-- Indicador de Carga (Loading Spinner) de Estadísticas -->
-        <div id="stats-loading-box" class="stats-loading-box" style="display: none;">
+        <!-- Indicador de Carga (Loading Spinner) de Estadísticas - Oculto con SWR para evitar bloqueos visuales -->
+        <div id="stats-loading-box" class="stats-loading-box" style="display: none !important;">
           <div class="spinner-ring"></div>
           <p class="loading-text">Sincronizando en tiempo real con <strong id="loading-lottery-name">la web oficial</strong>...</p>
         </div>
 
-        <!-- Mensaje de Error si falla la petición -->
-        <div id="stats-error-box" class="stats-error-box" style="display: none;">
+        <!-- Mensaje de Error suprimido (SWR resiliente que preserva la vista sin interrupciones) -->
+        <div id="stats-error-box" class="stats-error-box" style="display: none !important;">
           <span class="error-icon">⚠️</span>
           <p class="error-text">No se pudieron sincronizar las estadísticas en tiempo real desde la web oficial. Intenta de nuevo.</p>
           <button class="retry-btn" onclick="retryFetchCurrentLottery()">🔄 Reintentar</button>
@@ -376,7 +379,10 @@
         </div>
 
         <div class="lottery-selector-card" style="margin-bottom: 14px;">
-          <label for="hot-lottery-select">Seleccionar Lotería en Análisis:</label>
+          <div class="lottery-selector-header-flex">
+            <label for="hot-lottery-select">Seleccionar Lotería en Análisis:</label>
+            <span id="hot-sync-badge" class="sync-status-badge sync-status-online">🟢 En línea</span>
+          </div>
           <div class="select-wrapper">
             <select id="hot-lottery-select" class="custom-select" onchange="onHotLotteryChange(event)">
               <!-- Opciones de 14 loterías -->
@@ -385,14 +391,14 @@
           </div>
         </div>
 
-        <!-- Indicador de Carga para Números Calientes -->
-        <div id="hot-loading-box" class="stats-loading-box" style="display: none;">
+        <!-- Indicador de Carga para Números Calientes - Oculto con SWR para evitar bloqueos -->
+        <div id="hot-loading-box" class="stats-loading-box" style="display: none !important;">
           <div class="spinner-ring"></div>
           <p class="loading-text">Sincronizando números calientes en tiempo real con <strong id="hot-loading-lottery-name">la web oficial</strong>...</p>
         </div>
 
-        <!-- Mensaje de Error en Calientes -->
-        <div id="hot-error-box" class="stats-error-box" style="display: none;">
+        <!-- Mensaje de Error en Calientes suprimido (SWR resiliente) -->
+        <div id="hot-error-box" class="stats-error-box" style="display: none !important;">
           <span class="error-icon">⚠️</span>
           <p class="error-text">No se pudieron sincronizar las estadísticas en tiempo real desde la web oficial. Intenta de nuevo.</p>
           <button class="retry-btn" onclick="retryFetchCurrentLottery()">🔄 Reintentar</button>

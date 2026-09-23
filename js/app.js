@@ -184,12 +184,37 @@ function populateLotterySelects() {
 }
 
 /**
- * 3. Gestión de Estado e Interfaz de Usuario (UI):
- * Evento onChange al cambiar la opción en el menú desplegable:
- * - Oculta la tabla anterior
- * - Muestra el Loading Spinner: 'Cargando estadísticas de [Nombre]...'
- * - Ejecuta obtenerEstadisticasPorLoteria(e.target.value)
- * - Manejo de errores con mensaje claro si falla
+ * ETIQUETA DE ESTADO DISCRETA:
+ * "🟢 En línea (Actualizado HH:MM)" o "🟡 Sincronizando en segundo plano..."
+ */
+function updateSyncStatusBadge(status, formattedTime = '') {
+  const badgeStats = document.getElementById('stats-sync-badge');
+  const badgeHot = document.getElementById('hot-sync-badge');
+  const badges = [badgeStats, badgeHot].filter(Boolean);
+
+  badges.forEach((badge) => {
+    badge.className = 'sync-status-badge';
+    if (status === 'syncing') {
+      badge.classList.add('sync-status-syncing');
+      badge.innerHTML = `<span class="status-dot-pulse">🟡</span> Sincronizando en segundo plano...`;
+    } else if (status === 'cache') {
+      badge.classList.add('sync-status-cached');
+      const timeText = formattedTime ? ` (Caché ${formattedTime})` : '';
+      badge.innerHTML = `<span>🟢</span> En línea${timeText}`;
+    } else {
+      badge.classList.add('sync-status-online');
+      const timeText = formattedTime ? ` (Actualizado ${formattedTime})` : '';
+      badge.innerHTML = `<span>🟢</span> En línea${timeText}`;
+    }
+  });
+}
+
+/**
+ * 3. Gestión de Estado e Interfaz de Usuario (UI) con Estrategia SWR:
+ * - NUNCA muestra una pantalla de error que tape el contenido ni deja la vista vacía.
+ * - Muestra los datos cacheados al instante (0 ms de espera visual).
+ * - En una esquina discreta, muestra la etiqueta de estado pequeña.
+ * - Ejecuta la sincronización en segundo plano a través de la cola escalonada.
  */
 async function onLotteryChange(event) {
   const selectedKey = event ? event.target.value : document.getElementById('lottery-select').value;
@@ -197,7 +222,7 @@ async function onLotteryChange(event) {
     ? normalizarLoteriaKey(selectedKey)
     : selectedKey;
 
-  // Sincronizar otros selectores
+  // Sincronizar selectores en otras pestañas
   const selectHot = document.getElementById('hot-lottery-select');
   if (selectHot) selectHot.value = currentLotteryId;
   const selectJA = document.getElementById('ja-lottery-select');
@@ -206,31 +231,30 @@ async function onLotteryChange(event) {
   const contentBox = document.getElementById('lottery-stats-content');
   const loadingBox = document.getElementById('stats-loading-box');
   const errorBox = document.getElementById('stats-error-box');
-  const loadingName = document.getElementById('loading-lottery-name');
 
-  const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[currentLotteryId] : null;
-  const lotteryName = config ? config.nombre : currentLotteryId;
-
-  // Ocultar contenido anterior para evitar confusión y mostrar spinner
-  if (contentBox) contentBox.style.display = 'none';
+  // Mantener siempre visible el contenido (cero parpadeos de pantalla)
+  if (contentBox) contentBox.style.display = 'block';
+  if (loadingBox) loadingBox.style.display = 'none';
   if (errorBox) errorBox.style.display = 'none';
-  if (loadingName) loadingName.textContent = lotteryName;
-  if (loadingBox) loadingBox.style.display = 'block';
 
-  try {
-    // Extracción en vivo desde la web oficial con DOMParser
-    await cargarEstadisticasOficiales(currentLotteryId);
-    await renderLotteryView();
-  } catch (err) {
-    console.error('Error al obtener estadísticas de lotería en tiempo real:', err);
-    if (loadingBox) loadingBox.style.display = 'none';
-    if (errorBox) {
-      errorBox.style.display = 'block';
-      const errText = errorBox.querySelector('.error-text');
-      if (errText) {
-        errText.textContent = 'No se pudieron sincronizar las estadísticas en tiempo real desde la web oficial. Verifique su conexión e intente de nuevo.';
-      }
-    }
+  // 1. Obtener datos cacheados de inmediato (0 ms)
+  const cached = (typeof getCachedLotteryStats === 'function')
+    ? getCachedLotteryStats(currentLotteryId)
+    : null;
+
+  if (cached && cached.formattedTime) {
+    updateSyncStatusBadge('online', cached.formattedTime);
+  } else {
+    updateSyncStatusBadge('syncing');
+  }
+
+  // Renderizar al instante con datos en caché o catálogo canónico
+  await renderLotteryView();
+
+  // 2. Disparar sincronización silenciosa en segundo plano
+  if (typeof LotterySyncQueue !== 'undefined') {
+    updateSyncStatusBadge('syncing');
+    LotterySyncQueue.enqueue(currentLotteryId, true);
   }
 }
 
@@ -248,29 +272,29 @@ async function onHotLotteryChange(event) {
   const contentBox = document.getElementById('hot-numbers-content');
   const loadingBox = document.getElementById('hot-loading-box');
   const errorBox = document.getElementById('hot-error-box');
-  const loadingName = document.getElementById('hot-loading-lottery-name');
 
-  const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[currentLotteryId] : null;
-  const lotteryName = config ? config.nombre : currentLotteryId;
-
-  if (contentBox) contentBox.style.display = 'none';
+  // Mantener siempre visible el contenido
+  if (contentBox) contentBox.style.display = 'block';
+  if (loadingBox) loadingBox.style.display = 'none';
   if (errorBox) errorBox.style.display = 'none';
-  if (loadingName) loadingName.textContent = lotteryName;
-  if (loadingBox) loadingBox.style.display = 'block';
 
-  try {
-    await cargarEstadisticasOficiales(currentLotteryId);
-    await renderHotNumbersView();
-  } catch (err) {
-    console.error('Error en números calientes oficiales:', err);
-    if (loadingBox) loadingBox.style.display = 'none';
-    if (errorBox) {
-      errorBox.style.display = 'block';
-      const errText = errorBox.querySelector('.error-text');
-      if (errText) {
-        errText.textContent = 'No se pudieron sincronizar las estadísticas en tiempo real desde la web oficial. Verifique su conexión e intente de nuevo.';
-      }
-    }
+  const cached = (typeof getCachedLotteryStats === 'function')
+    ? getCachedLotteryStats(currentLotteryId)
+    : null;
+
+  if (cached && cached.formattedTime) {
+    updateSyncStatusBadge('online', cached.formattedTime);
+  } else {
+    updateSyncStatusBadge('syncing');
+  }
+
+  // Renderizar al instante con datos en caché
+  await renderHotNumbersView();
+
+  // Disparar sincronización silenciosa en segundo plano
+  if (typeof LotterySyncQueue !== 'undefined') {
+    updateSyncStatusBadge('syncing');
+    LotterySyncQueue.enqueue(currentLotteryId, true);
   }
 }
 
@@ -289,7 +313,10 @@ async function onJALotteryChange(event) {
 }
 
 async function retryFetchCurrentLottery() {
-  await onLotteryChange({ target: { value: currentLotteryId } });
+  if (typeof LotterySyncQueue !== 'undefined') {
+    updateSyncStatusBadge('syncing');
+    LotterySyncQueue.enqueue(currentLotteryId, true);
+  }
 }
 
 // ==========================================================================
@@ -474,30 +501,29 @@ async function renderHotNumbersView(forceRefresh = false) {
   const contentBox = document.getElementById('hot-numbers-content');
   const loadingBox = document.getElementById('hot-loading-box');
   const errorBox = document.getElementById('hot-error-box');
-  const loadingName = document.getElementById('hot-loading-lottery-name');
 
-  const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[currentLotteryId] : null;
-  const lotteryName = config ? config.nombre : currentLotteryId;
-
-  if (contentBox) contentBox.style.display = 'none';
+  // Mantener visible el contenido en todo momento (cero parpadeos)
+  if (contentBox) contentBox.style.display = 'block';
+  if (loadingBox) loadingBox.style.display = 'none';
   if (errorBox) errorBox.style.display = 'none';
-  if (loadingName) loadingName.textContent = lotteryName;
-  if (loadingBox) loadingBox.style.display = 'block';
 
   let statsData;
   try {
     statsData = await cargarEstadisticasOficiales(currentLotteryId, forceRefresh);
   } catch (err) {
-    console.error('Error al cargar estadísticas oficiales en tiempo real:', err);
-    if (loadingBox) loadingBox.style.display = 'none';
-    if (errorBox) {
-      errorBox.style.display = 'block';
-      const errText = errorBox.querySelector('.error-text');
-      if (errText) {
-        errText.textContent = 'No se pudieron sincronizar los números calientes en tiempo real con la web oficial. Verifique su conexión a internet e intente de nuevo.';
-      }
+    console.warn('Uso de caché resiliente en números calientes:', err);
+    statsData = (typeof getCachedLotteryStats === 'function')
+      ? getCachedLotteryStats(currentLotteryId)
+      : null;
+    if (!statsData && typeof generarDatosCanonicosBase === 'function') {
+      statsData = generarDatosCanonicosBase(currentLotteryId);
     }
-    return;
+  }
+
+  if (!statsData) return;
+
+  if (statsData.formattedTime) {
+    updateSyncStatusBadge('online', statsData.formattedTime);
   }
 
   const container = document.getElementById('hot-numbers-list-container');
@@ -1496,27 +1522,54 @@ function initPullToRefresh() {
 }
 
 function setupHourlyAutoRefresh() {
+  // 1. Iniciar motor de actualización automática (08:00 AM a 08:00 PM al minuto :10)
+  if (typeof LotteryAutoUpdater !== 'undefined') {
+    LotteryAutoUpdater.start();
+  }
+
+  // 2. Escuchar la cola escalonada para re-renderizar sin parpadeos
+  if (typeof LotterySyncQueue !== 'undefined') {
+    LotterySyncQueue.onSyncComplete((loteriaKey, stats, isSuccess) => {
+      const normCurrent = (typeof normalizarLoteriaKey === 'function')
+        ? normalizarLoteriaKey(currentLotteryId)
+        : currentLotteryId;
+
+      if (loteriaKey === normCurrent) {
+        const timeStr = stats ? (stats.formattedTime || '') : '';
+        if (isSuccess) {
+          updateSyncStatusBadge('online', timeStr);
+        } else {
+          updateSyncStatusBadge('cache', timeStr);
+        }
+
+        // Re-renderizado sin parpadeos ni salto de pantalla
+        const activeSec = document.querySelector('.view-section.active');
+        if (activeSec && activeSec.id === 'view-lotteries') {
+          renderLotteryView();
+        } else if (activeSec && activeSec.id === 'view-hot-numbers') {
+          renderHotNumbersView();
+        }
+      }
+    });
+  }
+
+  // 3. Chequeo al volver a la pestaña o app
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      checkHourlyCacheAndRefresh();
+    if (document.visibilityState === 'visible' && typeof LotteryAutoUpdater !== 'undefined') {
+      LotteryAutoUpdater.checkAndTriggerSync();
     }
   });
 
   window.addEventListener('focus', () => {
-    checkHourlyCacheAndRefresh();
+    if (typeof LotteryAutoUpdater !== 'undefined') {
+      LotteryAutoUpdater.checkAndTriggerSync();
+    }
   });
-
-  setInterval(() => {
-    checkHourlyCacheAndRefresh();
-  }, 5 * 60 * 1000);
 }
 
 async function checkHourlyCacheAndRefresh() {
-  if (DatosOrbetDB.isCacheExpired && DatosOrbetDB.isCacheExpired(currentLotteryId)) {
-    console.log(`[DatosOrbet] Nueva hora detectada para ${currentLotteryId}. Re-sincronizando estadísticas oficiales...`);
-    await obtenerEstadisticasPorLoteria(currentLotteryId);
-    await renderLotteryView();
-    await renderHotNumbersView();
+  if (typeof LotteryAutoUpdater !== 'undefined') {
+    LotteryAutoUpdater.checkAndTriggerSync();
   }
 }
 
@@ -1705,4 +1758,5 @@ if (typeof window !== 'undefined') {
   window.closeShareAppModal = closeShareAppModal;
   window.releaseUserDeviceAction = releaseUserDeviceAction;
   window.releaseUserIPAction = releaseUserIPAction;
+  window.updateSyncStatusBadge = updateSyncStatusBadge;
 }

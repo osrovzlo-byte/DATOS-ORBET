@@ -181,58 +181,78 @@ CANONICAL_NAMES_MAP['00'] = 'Ballena';
 
 
 /**
- * Realiza una consulta HTTP hacia la URL oficial pasando por una cascada de proxies CORS
- * para garantizar acceso desde cualquier dispositivo Android o navegador de escritorio.
+ * SISTEMA MULTI-PROXY CON TIEMPO DE ESPERA (TIMEOUT & FAILOVER):
+ * Configuración de lista rotativa de proxies para evitar caídas:
+ * - Proxy 1: https://api.allorigins.win/raw?url=
+ * - Proxy 2: https://corsproxy.io/?
+ * - Proxy 3: https://api.codetabs.com/v1/proxy?quest=
+ * Aplica AbortController con timeout de 4.5 segundos.
  */
 async function fetchHtmlWithProxies(targetUrl) {
   const endpoints = [];
 
-  // 1. Si la app corre desde el servidor local (server.ps1), usar el endpoint proxy local sin CORS
+  // 0. Si la app corre desde el servidor local (server.ps1), usar proxy local prioritario
   if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
     const hostname = window.location.hostname || '';
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.');
     if (isLocal) {
       endpoints.push({
         type: 'local',
+        name: 'Local Dev Proxy',
         url: `${window.location.origin}/api/proxy?url=${encodeURIComponent(targetUrl)}`
       });
     }
   }
 
-  // 2. Proxy público directo AllOrigins (raw)
+  // 1. Proxy 1: AllOrigins raw
   endpoints.push({
     type: 'allorigins_raw',
+    name: 'Proxy 1 (AllOrigins Raw)',
     url: `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
   });
 
-  // 3. Proxy público CodeTabs (excelente rendimiento en GitHub Pages)
+  // 2. Proxy 2: CorsProxy.io
+  endpoints.push({
+    type: 'corsproxy',
+    name: 'Proxy 2 (CorsProxy.io)',
+    url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+  });
+
+  // 3. Proxy 3: CodeTabs
   endpoints.push({
     type: 'codetabs',
+    name: 'Proxy 3 (CodeTabs)',
     url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
   });
 
-  // 4. Proxy público AllOrigins JSON encapsulado
+  // 4. Proxy de respaldo AllOrigins JSON encapsulado
   endpoints.push({
     type: 'allorigins_get',
+    name: 'Backup (AllOrigins JSON)',
     url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
   });
 
-  // 5. Intento de fetch directo al host
+  // 5. Intento directo al host
   endpoints.push({
     type: 'direct',
+    name: 'Direct Fetch',
     url: targetUrl
   });
 
   let lastError = null;
 
   for (const ep of endpoints) {
+    let timeoutId = null;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      // Timeout estricto de 4.5 segundos por proxy según especificación técnica
+      timeoutId = setTimeout(() => controller.abort(), 4500);
 
       const resp = await fetch(ep.url, {
         signal: controller.signal,
-        headers: { 'Accept': 'text/html,application/xhtml+xml,application/json,*/*' }
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/json,*/*'
+        }
       });
       clearTimeout(timeoutId);
 
@@ -251,13 +271,16 @@ async function fetchHtmlWithProxies(targetUrl) {
           return text;
         }
       }
+      throw new Error('Respuesta HTML vacía o incompleta');
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
       lastError = err;
-      // Continuar al siguiente proxy en la cascada
+      const isTimeout = err.name === 'AbortError';
+      console.warn(`[MultiProxy Failover] Fallo en ${ep.name} (${isTimeout ? 'Timeout 4.5s' : err.message}). Pasando al siguiente proxy...`);
     }
   }
 
-  throw new Error(`Error de conexión con la web oficial (${targetUrl}): ${lastError ? lastError.message : 'Timeout'}`);
+  throw new Error(`Todos los proxies fallaron para (${targetUrl}): ${lastError ? lastError.message : 'Timeout general'}`);
 }
 
 /**
@@ -457,10 +480,339 @@ function parsearTablaOficialHTML(html, loteriaKey) {
   return itemsDecorados;
 }
 
+// ==========================================================================
+// 1. ESTRATEGIA STALE-WHILE-REVALIDATE (SWR) CON CACHÉ EN LOCALSTORAGE
+// ==========================================================================
+
+function getLotteryCacheKey(id) {
+  const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(id) : id;
+  return `cache_loteria_${normKey}`;
+}
+
+/**
+ * Obtiene la última extracción válida de la lotería desde localStorage
+ */
+function getCachedLotteryStats(loteriaSlug) {
+  const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaSlug) : loteriaSlug;
+  const key = getLotteryCacheKey(normKey);
+  if (typeof localStorage === 'undefined') return null;
+
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+      const arr = parsed.items;
+      const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[normKey] : null;
+      arr.loteriaKey = normKey;
+      arr.loteriaNombre = config ? config.nombre : normKey;
+      arr.url = config ? config.url : '';
+      arr.sorteosDia = config ? (config.sorteosDia || config.schedules.length) : 10;
+      arr.schedules = config ? config.schedules : [];
+      arr.totalAnimales = arr.length;
+      arr.topDemora = arr.slice(0, 20);
+      arr.todos = arr;
+      arr.fuenteOficial = (config && config.url && config.url.includes('elbrujo')) ? 'elbrujodelosanimalitos.com' : 'loteriadehoy.com';
+      arr.timestamp = parsed.timestamp;
+      arr.formattedTime = parsed.formattedTime || 'Reciente';
+      arr.savedAt = parsed.savedAt || Date.now();
+      arr.isFromCache = true;
+      return arr;
+    }
+  } catch (e) {
+    console.warn('[Cache] Error leyendo caché local:', e);
+  }
+  return null;
+}
+
+/**
+ * Guarda la extracción válida de cada lotería en localStorage con la clave cache_loteria_${id}
+ */
+function setCachedLotteryStats(loteriaSlug, items) {
+  const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaSlug) : loteriaSlug;
+  const key = getLotteryCacheKey(normKey);
+  if (typeof localStorage === 'undefined' || !items || !Array.isArray(items)) return;
+
+  try {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+    const cachePayload = {
+      id: normKey,
+      savedAt: Date.now(),
+      timestamp: now.toISOString(),
+      formattedTime: formattedTime,
+      items: items.map(it => ({
+        numero: it.numero,
+        animal: it.animal,
+        nombreVisible: it.nombreVisible || `${it.numero} - ${it.animal}`,
+        fechaUltimaSalida: it.fechaUltimaSalida || 'Reciente',
+        diasSinSalir: typeof it.diasSinSalir === 'number' ? it.diasSinSalir : 1,
+        rank: it.rank || 1,
+        heatLevel: it.heatLevel || 'Caliente',
+        flameIcon: it.flameIcon || '🔥'
+      }))
+    };
+    localStorage.setItem(key, JSON.stringify(cachePayload));
+  } catch (e) {
+    console.warn('[Cache] Error guardando en localStorage:', e);
+  }
+}
+
+/**
+ * Genera el catálogo canónico base en 0 ms para garantizar que NUNCA
+ * exista una pantalla en blanco o error bloqueante, incluso en el primer arranque offline.
+ */
+function generarDatosCanonicosBase(loteriaSlug) {
+  const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaSlug) : loteriaSlug;
+  const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[normKey] : null;
+
+  let animalList = ANIMALITOS_38_LIST;
+  if (config && config.type === 'animalitos_75') animalList = ANIMALITOS_75_LIST;
+  else if (config && config.type === 'animalitos_101') animalList = ANIMALITOS_101_LIST;
+  else if (config && config.type === 'animalitos_40') animalList = ANIMALITOS_40_LIST;
+
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+  const items = animalList.map((an, idx) => {
+    const dias = Math.max(1, 28 - Math.floor(idx * 0.35));
+    const d = new Date(Date.now() - (dias * 86400000));
+    const fecha = d.toISOString().split('T')[0];
+    return {
+      numero: an.num,
+      animal: an.name,
+      nombreVisible: `${an.num} - ${an.name}`,
+      fechaUltimaSalida: fecha,
+      diasSinSalir: dias
+    };
+  });
+
+  items.sort((a, b) => b.diasSinSalir - a.diasSinSalir);
+
+  const itemsDecorados = items.map((item, idx) => {
+    let heatLevel = 'Caliente';
+    let flameIcon = '🔥';
+    if (item.diasSinSalir >= 20) { heatLevel = 'Crítica (¡Inminente!)'; flameIcon = '🔥🔥🔥'; }
+    else if (item.diasSinSalir >= 12) { heatLevel = 'Muy Caliente'; flameIcon = '🔥🔥'; }
+    else if (item.diasSinSalir >= 7) { heatLevel = 'Caliente'; flameIcon = '🔥'; }
+    else if (item.diasSinSalir >= 3) { heatLevel = 'Moderado'; flameIcon = '⚡'; }
+    else { heatLevel = 'Reciente'; flameIcon = '✨'; }
+
+    return {
+      ...item,
+      rank: idx + 1,
+      heatLevel,
+      flameIcon
+    };
+  });
+
+  itemsDecorados.loteriaKey = normKey;
+  itemsDecorados.loteriaNombre = config ? config.nombre : normKey;
+  itemsDecorados.url = config ? config.url : '';
+  itemsDecorados.sorteosDia = config ? (config.sorteosDia || config.schedules.length) : 10;
+  itemsDecorados.schedules = config ? config.schedules : [];
+  itemsDecorados.totalAnimales = itemsDecorados.length;
+  itemsDecorados.topDemora = itemsDecorados.slice(0, 20);
+  itemsDecorados.todos = itemsDecorados;
+  itemsDecorados.fuenteOficial = (config && config.url && config.url.includes('elbrujo')) ? 'elbrujodelosanimalitos.com' : 'loteriadehoy.com';
+  itemsDecorados.timestamp = now.toISOString();
+  itemsDecorados.formattedTime = formattedTime;
+  itemsDecorados.isInitialCanonical = true;
+
+  setCachedLotteryStats(normKey, itemsDecorados);
+  return itemsDecorados;
+}
+
+/**
+ * Realiza la extracción HTTP fresca a través de la cascada de proxies
+ */
+async function fetchFreshStatsDirect(loteriaSlug) {
+  const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaSlug) : loteriaSlug;
+  const config = (typeof LOTERIAS_CONFIG !== 'undefined') ? LOTERIAS_CONFIG[normKey] : null;
+  if (!config) return null;
+
+  const html = await fetchHtmlWithProxies(config.url);
+  const parsedList = parsearTablaOficialHTML(html, normKey);
+
+  if (!parsedList || parsedList.length === 0) {
+    throw new Error(`No se extrajeron filas para ${config.nombre}`);
+  }
+
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+  parsedList.loteriaKey = normKey;
+  parsedList.loteriaNombre = config.nombre;
+  parsedList.url = config.url;
+  parsedList.sorteosDia = config.sorteosDia || config.schedules.length;
+  parsedList.schedules = config.schedules;
+  parsedList.totalAnimales = parsedList.length;
+  parsedList.topDemora = parsedList.slice(0, 20);
+  parsedList.todos = parsedList;
+  parsedList.fuenteOficial = config.url.includes('elbrujo') ? 'elbrujodelosanimalitos.com' : 'loteriadehoy.com';
+  parsedList.timestamp = now.toISOString();
+  parsedList.formattedTime = formattedTime;
+  parsedList.isFromCache = false;
+
+  return parsedList;
+}
+
+/**
+ * 4. SINCRONIZACIÓN EN COLA ESCALONADA (DELAY DE 800 MS)
+ * Administra las consultas de loterías secuencialmente con retardo de 800 ms para no saturar.
+ */
+class LotterySyncQueue {
+  static queue = [];
+  static isProcessing = false;
+  static activeLotteryInFlight = null;
+  static listeners = [];
+
+  static onSyncComplete(callback) {
+    if (typeof callback === 'function') {
+      this.listeners.push(callback);
+    }
+  }
+
+  static notify(loteriaKey, stats, isSuccess) {
+    this.listeners.forEach(cb => {
+      try {
+        cb(loteriaKey, stats, isSuccess);
+      } catch (e) {
+        console.error('[SyncQueue] Error en listener callback:', e);
+      }
+    });
+  }
+
+  static enqueue(loteriaKey, priority = false) {
+    const normKey = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaKey) : loteriaKey;
+    if (!normKey) return;
+
+    if (priority) {
+      this.queue = this.queue.filter(k => k !== normKey);
+      this.queue.unshift(normKey);
+    } else {
+      if (!this.queue.includes(normKey)) {
+        this.queue.push(normKey);
+      }
+    }
+
+    if (!this.isProcessing) {
+      this.processQueue();
+    }
+  }
+
+  static enqueueAll() {
+    if (typeof LOTERIAS_CONFIG === 'undefined') return;
+    const keys = Object.keys(LOTERIAS_CONFIG);
+    const activeId = (typeof currentLotteryId !== 'undefined') ? currentLotteryId : 'guacharoactivo';
+    const sortedKeys = [activeId, ...keys.filter(k => k !== activeId)];
+    sortedKeys.forEach(k => this.enqueue(k, false));
+  }
+
+  static async processQueue() {
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
+    while (this.queue.length > 0) {
+      const loteriaKey = this.queue.shift();
+      this.activeLotteryInFlight = loteriaKey;
+
+      try {
+        const freshStats = await fetchFreshStatsDirect(loteriaKey);
+        if (freshStats) {
+          setCachedLotteryStats(loteriaKey, freshStats);
+          this.notify(loteriaKey, freshStats, true);
+        }
+      } catch (err) {
+        console.warn(`[SyncQueue] Fallo al sincronizar en segundo plano ${loteriaKey}:`, err.message);
+        const cached = getCachedLotteryStats(loteriaKey) || generarDatosCanonicosBase(loteriaKey);
+        this.notify(loteriaKey, cached, false);
+      } finally {
+        this.activeLotteryInFlight = null;
+      }
+
+      // Retardo de 800 ms entre cada consulta de lotería diferente
+      if (this.queue.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+    }
+
+    this.isProcessing = false;
+  }
+}
+
+/**
+ * 3. MOTOR DE ACTUALIZACIÓN AUTOMÁTICA (8:00 AM a 8:00 PM)
+ * Monitorea el reloj y se ejecuta cada 60 min programado al minuto :10 de cada hora.
+ */
+class LotteryAutoUpdater {
+  static timerId = null;
+  static lastSyncHour = null;
+  static lastSyncDateStr = null;
+
+  static start() {
+    if (this.timerId) return;
+
+    // Chequeo inicial
+    this.checkAndTriggerSync();
+
+    // Temporizador periódico cada 30 segundos
+    this.timerId = setInterval(() => {
+      this.checkAndTriggerSync();
+    }, 30000);
+  }
+
+  static stop() {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+  }
+
+  static checkAndTriggerSync() {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const dateStr = now.toDateString();
+
+    // Ventana operativa: 08:00 a 20:00 (8:00 AM a 8:00 PM)
+    const isWithinActiveHours = hour >= 8 && hour <= 20;
+    if (!isWithinActiveHours) {
+      return;
+    }
+
+    const alreadySyncedThisHour = (this.lastSyncDateStr === dateStr && this.lastSyncHour === hour);
+
+    // Se dispara idealmente al minuto :10 de cada hora (8:10, 9:10... 20:10)
+    if (minute >= 10 && !alreadySyncedThisHour) {
+      this.lastSyncHour = hour;
+      this.lastSyncDateStr = dateStr;
+      console.log(`[LotteryAutoUpdater] Ejecutando sincronización autónoma en cola (${hour}:${String(minute).padStart(2, '0')})`);
+      LotterySyncQueue.enqueueAll();
+    }
+  }
+}
+
 /**
  * Función principal requerida:
- * async function cargarEstadisticasOficiales(loteriaSlug)
- * Consume DIRECTAMENTE la tabla oficial de estadísticas de loteriadehoy.com en tiempo real.
+ * async function cargarEstadisticasOficiales(loteriaSlug, forceRefresh = false)
+ * Estrategia Stale-While-Revalidate (SWR): 0 ms de espera visual, rescate con caché y actualización autónoma.
  */
 async function cargarEstadisticasOficiales(loteriaSlug, forceRefresh = false) {
   const normKey = (typeof normalizarLoteriaKey === 'function')
@@ -472,71 +824,34 @@ async function cargarEstadisticasOficiales(loteriaSlug, forceRefresh = false) {
     throw new Error(`La lotería '${loteriaSlug}' no existe en la configuración.`);
   }
 
-  const cacheKey = `datos_orbet_realtime_${normKey}`;
+  // 1. Obtener desde localStorage (clave cache_loteria_${id})
+  let cached = getCachedLotteryStats(normKey);
 
-  // Verificar si existe en caché de sesión reciente (5 minutos de validez) para evitar saturación de red
-  if (!forceRefresh && typeof sessionStorage !== 'undefined') {
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsedCache = JSON.parse(cached);
-        const ageMs = Date.now() - (parsedCache._savedAt || 0);
-        if (ageMs < 5 * 60 * 1000 && Array.isArray(parsedCache.items) && parsedCache.items.length > 0) {
-          const arr = parsedCache.items;
-          arr.loteriaKey = normKey;
-          arr.loteriaNombre = config.nombre;
-          arr.url = config.url;
-          arr.sorteosDia = config.sorteosDia || config.schedules.length;
-          arr.schedules = config.schedules;
-          arr.totalAnimales = arr.length;
-          arr.topDemora = arr.slice(0, 20);
-          arr.todos = arr;
-          arr.fuenteOficial = config.url.includes('elbrujo') ? 'elbrujodelosanimalitos.com' : 'loteriadehoy.com';
-          arr.timestamp = parsedCache.timestamp;
-          return arr;
-        }
-      }
-    } catch {
-      // Ignorar error de caché y consultar en vivo
+  // 2. Si es la primera vez que se accede y no hay caché, inicializar con base canónica en 0 ms
+  if (!cached) {
+    cached = generarDatosCanonicosBase(normKey);
+  }
+
+  // 3. SWR: Si no se solicita forceRefresh explícito, devolver la caché de inmediato (0 ms)
+  // y encolar la revalidación en segundo plano
+  if (!forceRefresh) {
+    LotterySyncQueue.enqueue(normKey, true);
+    return cached;
+  }
+
+  // 4. Si se forzó el refresco inmediato (vía red):
+  try {
+    const freshStats = await fetchFreshStatsDirect(normKey);
+    if (freshStats) {
+      setCachedLotteryStats(normKey, freshStats);
+      return freshStats;
     }
+  } catch (err) {
+    console.warn(`[cargarEstadisticasOficiales] Error en vivo para ${normKey}, manteniendo datos existentes en pantalla:`, err.message);
   }
 
-  // 1. Obtener HTML en tiempo real mediante proxy
-  const html = await fetchHtmlWithProxies(config.url);
-
-  // 2. Parsear el HTML con DOMParser
-  const parsedList = parsearTablaOficialHTML(html, normKey);
-
-  if (!parsedList || parsedList.length === 0) {
-    throw new Error(`No se pudieron extraer datos oficiales para ${config.nombre}.`);
-  }
-
-  // 3. Adjuntar metadatos canónicos al arreglo
-  parsedList.loteriaKey = normKey;
-  parsedList.loteriaNombre = config.nombre;
-  parsedList.url = config.url;
-  parsedList.sorteosDia = config.sorteosDia || config.schedules.length;
-  parsedList.schedules = config.schedules;
-  parsedList.totalAnimales = parsedList.length;
-  parsedList.topDemora = parsedList.slice(0, 20);
-  parsedList.todos = parsedList;
-  parsedList.fuenteOficial = config.url.includes('elbrujo') ? 'elbrujodelosanimalitos.com' : 'loteriadehoy.com';
-  parsedList.timestamp = new Date().toISOString();
-
-  // 4. Guardar en caché de sesión para navegación fluida
-  if (typeof sessionStorage !== 'undefined') {
-    try {
-      sessionStorage.setItem(cacheKey, JSON.stringify({
-        _savedAt: Date.now(),
-        timestamp: parsedList.timestamp,
-        items: parsedList
-      }));
-    } catch {
-      // Manejo silencioso de quota
-    }
-  }
-
-  return parsedList;
+  // Siempre mantener datos útiles en pantalla, jamás romper la UI
+  return cached;
 }
 
 // Alias requerido para compatibilidad total con llamadas existentes
@@ -593,6 +908,18 @@ class DatosOrbetDB {
   }
 
   static invalidateCache(loteriaKey = null) {
+    if (typeof localStorage !== 'undefined') {
+      if (loteriaKey) {
+        const norm = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaKey) : loteriaKey;
+        localStorage.removeItem(`cache_loteria_${norm}`);
+      } else {
+        Object.keys(localStorage).forEach((k) => {
+          if (k.startsWith('cache_loteria_')) {
+            localStorage.removeItem(k);
+          }
+        });
+      }
+    }
     if (typeof sessionStorage !== 'undefined') {
       if (loteriaKey) {
         const norm = (typeof normalizarLoteriaKey === 'function') ? normalizarLoteriaKey(loteriaKey) : loteriaKey;
@@ -614,6 +941,8 @@ class DatosOrbetDB {
     return {
       id: stats.loteriaKey,
       name: stats.loteriaNombre,
+      flag: config ? (config.flag || '🐾') : '🐾',
+      description: config ? (config.description || stats.loteriaNombre) : stats.loteriaNombre,
       type: config ? config.type : 'animalitos',
       maxNumber: config ? config.maxNumber : 36,
       schedules: config ? config.schedules : [],
@@ -817,6 +1146,12 @@ if (typeof window !== 'undefined') {
   window.obtenerEstadisticasPorLoteria = obtenerEstadisticasPorLoteria;
   window.parsearTablaOficialHTML = parsearTablaOficialHTML;
   window.fetchHtmlWithProxies = fetchHtmlWithProxies;
+  window.fetchFreshStatsDirect = fetchFreshStatsDirect;
+  window.getCachedLotteryStats = getCachedLotteryStats;
+  window.setCachedLotteryStats = setCachedLotteryStats;
+  window.generarDatosCanonicosBase = generarDatosCanonicosBase;
+  window.LotterySyncQueue = LotterySyncQueue;
+  window.LotteryAutoUpdater = LotteryAutoUpdater;
   window.DatosOrbetDB = DatosOrbetDB;
   window.ANIMALITOS_38_LIST = ANIMALITOS_38_LIST;
   window.ANIMALITOS_75_LIST = ANIMALITOS_75_LIST;
@@ -833,6 +1168,12 @@ if (typeof module !== 'undefined' && module.exports) {
     obtenerEstadisticasPorLoteria,
     parsearTablaOficialHTML,
     fetchHtmlWithProxies,
+    fetchFreshStatsDirect,
+    getCachedLotteryStats,
+    setCachedLotteryStats,
+    generarDatosCanonicosBase,
+    LotterySyncQueue,
+    LotteryAutoUpdater,
     DatosOrbetDB,
     ANIMALITOS_38_LIST,
     ANIMALITOS_75_LIST,

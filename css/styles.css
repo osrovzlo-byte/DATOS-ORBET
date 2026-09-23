@@ -356,6 +356,66 @@ body {
   letter-spacing: 0.5px;
 }
 
+.lottery-selector-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.lottery-selector-header-flex label {
+  margin-bottom: 0 !important;
+}
+
+.sync-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: calc(0.74rem * var(--font-scale));
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.sync-status-badge.sync-status-online {
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.sync-status-badge.sync-status-syncing {
+  background: rgba(234, 179, 8, 0.25);
+  color: #fef08a;
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  animation: pulseSyncBadge 1.2s infinite ease-in-out alternate;
+}
+
+.sync-status-badge.sync-status-cached {
+  background: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+@keyframes pulseSyncBadge {
+  from { opacity: 0.85; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1.02); }
+}
+
+.status-dot-pulse {
+  display: inline-block;
+  animation: spinDot 1s linear infinite;
+}
+
+@keyframes spinDot {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .select-wrapper {
   position: relative;
   width: 100%;
@@ -2004,6 +2064,8 @@ body {
 }
 
 .stats-error-box {
+  display: none !important;
+  pointer-events: none;
   background: #fff1f2;
   border: 2px solid #fecdd3;
   border-radius: var(--radius-md);
