@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-09-21T05:20:00.000Z",
+  "lastUpdated": "2026-10-06T22:00:00.000Z",
   "updatedBy": "admin",
   "settings": {
     "whatsapp": {
@@ -42,7 +42,7 @@
     {
       "id": "usr_admin_master",
       "username": "admin",
-      "password": "orbet2026",
+      "password": "osrovzlo2026",
       "name": "Administrador Principal",
       "role": "admin",
       "status": "active",
@@ -52,14 +52,36 @@
     },
     {
       "id": "usr_jesus_vip",
-      "username": "JESUS",
+      "username": "jesus",
       "password": "12345",
       "name": "JESUS / RECEPTOR",
       "role": "vip",
       "status": "active",
-      "expiresAt": "2026-10-21",
+      "expiresAt": "2026-10-15",
       "dispositivo_vinculado": null,
       "createdAt": "2026-09-21"
+    },
+    {
+      "id": "usr_bettzabeth_vip",
+      "username": "Bettzabeth",
+      "password": "12345",
+      "name": "Bettzabeth",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-10-15",
+      "dispositivo_vinculado": null,
+      "createdAt": "2026-10-06"
+    },
+    {
+      "id": "usr_mariela_vip",
+      "username": "mariela",
+      "password": "12345",
+      "name": "mariela",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-10-15",
+      "dispositivo_vinculado": null,
+      "createdAt": "2026-10-06"
     }
   ]
 }
