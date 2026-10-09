@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-10-06T22:00:00.000Z",
+  "lastUpdated": "2026-10-09T19:59:00.228Z",
   "updatedBy": "admin",
   "settings": {
     "whatsapp": {
@@ -36,7 +36,8 @@
         "usdtWallet": "TQx9A7V3pL8... (TRC20 Red Tron)",
         "bep20Wallet": "0x71C... (BSC Red Binance)"
       }
-    }
+    },
+    "fontSize": "normal"
   },
   "users": [
     {
@@ -60,6 +61,18 @@
       "expiresAt": "2026-10-15",
       "dispositivo_vinculado": null,
       "createdAt": "2026-09-21"
+    },
+    {
+      "id": "usr_1791568593860_9txf",
+      "username": "deptecnico",
+      "password": "12345",
+      "name": "departamento tecnico",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-10-16",
+      "dispositivo_vinculado": null,
+      "lastLoginAt": null,
+      "createdAt": "2026-10-09"
     },
     {
       "id": "usr_bettzabeth_vip",
