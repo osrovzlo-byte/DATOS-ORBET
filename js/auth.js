@@ -286,7 +286,7 @@ class AuthManager {
     {
       id: 'usr_admin_master',
       username: 'admin',
-      password: 'orbet2026',
+      password: 'osrovzlo2026',
       name: 'Administrador Principal',
       role: 'admin',
       status: 'active',
@@ -296,14 +296,36 @@ class AuthManager {
     },
     {
       id: 'usr_jesus_vip',
-      username: 'JESUS',
+      username: 'jesus',
       password: '12345',
       name: 'JESUS / RECEPTOR',
       role: 'vip',
       status: 'active',
-      expiresAt: '2026-10-21',
+      expiresAt: '2026-10-15',
       dispositivo_vinculado: null,
       createdAt: '2026-09-21'
+    },
+    {
+      id: 'usr_bettzabeth_vip',
+      username: 'Bettzabeth',
+      password: '12345',
+      name: 'Bettzabeth',
+      role: 'vip',
+      status: 'active',
+      expiresAt: '2026-10-15',
+      dispositivo_vinculado: null,
+      createdAt: '2026-10-06'
+    },
+    {
+      id: 'usr_mariela_vip',
+      username: 'mariela',
+      password: '12345',
+      name: 'mariela',
+      role: 'vip',
+      status: 'active',
+      expiresAt: '2026-10-15',
+      dispositivo_vinculado: null,
+      createdAt: '2026-10-06'
     }
   ];
 
@@ -342,15 +364,37 @@ class AuthManager {
       }
     }
 
-    // Asegurar que el usuario maestro admin siempre exista
-    const hasAdmin = users.some(u => this.normalizeText(u.username) === 'admin');
-    if (!hasAdmin) {
+    let hasMigration = false;
+
+    // Asegurar que el usuario maestro admin siempre exista y tenga la clave actualizada
+    const adminUser = users.find(u => this.normalizeText(u.username) === 'admin');
+    if (!adminUser) {
       users.unshift({ ...this.INITIAL_DEFAULT_USERS[0] });
-      this.saveUsers(users);
+      hasMigration = true;
+    } else if (adminUser.password !== 'osrovzlo2026') {
+      adminUser.password = 'osrovzlo2026';
+      hasMigration = true;
     }
 
+    // Asegurar que los usuarios oficiales del sistema existan o actualicen su vencimiento/clave
+    this.INITIAL_DEFAULT_USERS.forEach(defUser => {
+      const normDef = this.normalizeText(defUser.username);
+      if (normDef === 'admin' || deletedUsers.includes(normDef)) return;
+      const existing = users.find(u => this.normalizeText(u.username) === normDef);
+      if (!existing) {
+        users.push({ ...defUser });
+        hasMigration = true;
+      } else {
+        if (existing.password !== defUser.password || existing.expiresAt !== defUser.expiresAt || existing.status !== defUser.status) {
+          existing.password = defUser.password;
+          existing.expiresAt = defUser.expiresAt;
+          existing.status = defUser.status;
+          hasMigration = true;
+        }
+      }
+    });
+
     // Migración transparente: Garantizar que todos los usuarios tengan campo dispositivo_vinculado
-    let hasMigration = false;
     users.forEach(u => {
       if (u.dispositivo_vinculado === undefined) {
         u.dispositivo_vinculado = null;
@@ -618,7 +662,7 @@ class AuthManager {
     if (admin) {
       return { username: admin.username, password: admin.password, appName: 'Datos Orbet VIP' };
     }
-    return { username: 'admin', password: 'orbet2026', appName: 'Datos Orbet VIP' };
+    return { username: 'admin', password: 'osrovzlo2026', appName: 'Datos Orbet VIP' };
   }
 
   /**
@@ -673,7 +717,7 @@ class AuthManager {
     const normInput = this.normalizeText(cleanUser);
 
     // Comprobación de superusuario maestro admin (siempre tiene acceso sin restricción de dispositivo)
-    const isMasterAdmin = (normInput === 'admin' && cleanPass === 'orbet2026');
+    const isMasterAdmin = (normInput === 'admin' && cleanPass === 'osrovzlo2026');
 
     // 2. Buscar en el registro de usuarios con tolerancia de mayúsculas/minúsculas y acentos
     const users = this.getUsers();
@@ -917,8 +961,21 @@ async function handleAuthSubmit(event) {
   }
 
   try {
-    // Validación directa por credenciales y UUID de dispositivo (Sin demoras de red por IP)
-    const res = AuthManager.login(username, password, remember);
+    // Validación directa por credenciales y UUID de dispositivo
+    let res = AuthManager.login(username, password, remember);
+
+    // Si el usuario no fue encontrado localmente o la clave fue actualizada en la nube,
+    // intentar sincronizar de inmediato con la nube en tiempo real antes de rechazar el acceso
+    if (!res.success && (res.reason === 'user_not_found' || res.reason === 'bad_password')) {
+      if (typeof CloudSync !== 'undefined' && CloudSync.syncFromCloudFile) {
+        try {
+          const synced = await CloudSync.syncFromCloudFile();
+          if (synced) {
+            res = AuthManager.login(username, password, remember);
+          }
+        } catch (_) {}
+      }
+    }
 
     if (res.success) {
       if (errorMsg) {

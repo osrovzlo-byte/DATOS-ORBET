@@ -24,28 +24,58 @@ class CloudSync {
    * Intenta descargar el archivo data/app_cloud_data.json del repositorio / servidor
    */
   static async syncFromCloudFile() {
-    // Agregar timestamp para evitar caché del navegador o de GitHub Pages
     const cacheBuster = '?t=' + Date.now();
-    let url = this.CLOUD_FILE_PATH + cacheBuster;
+    const candidateUrls = [];
 
-    // Si corre en un subdirectorio o GitHub Pages
     if (typeof window !== 'undefined' && window.location) {
-      const base = window.location.href.split('?')[0].split('#')[0];
-      const basePath = base.substring(0, base.lastIndexOf('/') + 1);
-      url = basePath + this.CLOUD_FILE_PATH + cacheBuster;
+      const origin = window.location.origin || '';
+      const href = window.location.href.split('?')[0].split('#')[0];
+
+      // 1. URL canónica de GitHub Pages
+      candidateUrls.push(`https://osrovzlo-byte.github.io/DATOS-ORBET/${this.CLOUD_FILE_PATH}${cacheBuster}`);
+
+      // 2. Resolver basePath normalizando barra final
+      let baseDir = href;
+      if (baseDir.endsWith('/index.html')) {
+        baseDir = baseDir.substring(0, baseDir.lastIndexOf('/index.html') + 1);
+      } else if (!baseDir.endsWith('/')) {
+        baseDir = baseDir + '/';
+      }
+      candidateUrls.push(baseDir + this.CLOUD_FILE_PATH + cacheBuster);
+
+      // 3. Resolución basada en pathname del host actual
+      const pathParts = (window.location.pathname || '').split('/').filter(Boolean);
+      if (pathParts.length > 0 && !pathParts[pathParts.length - 1].includes('.')) {
+        candidateUrls.push(`${origin}/${pathParts.join('/')}/${this.CLOUD_FILE_PATH}${cacheBuster}`);
+      } else if (pathParts.length > 1) {
+        candidateUrls.push(`${origin}/${pathParts.slice(0, -1).join('/')}/${this.CLOUD_FILE_PATH}${cacheBuster}`);
+      }
+
+      // 4. Ruta relativa directa
+      candidateUrls.push(`./${this.CLOUD_FILE_PATH}${cacheBuster}`);
+      candidateUrls.push(`${this.CLOUD_FILE_PATH}${cacheBuster}`);
+    } else {
+      candidateUrls.push(this.CLOUD_FILE_PATH + cacheBuster);
     }
 
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      // Si estamos en un entorno donde no hay servidor http (file://), intentar ruta relativa estándar
-      const fallbackRes = await fetch(this.CLOUD_FILE_PATH, { cache: 'no-store' });
-      if (!fallbackRes.ok) return false;
-      const data = await fallbackRes.json();
-      return this.applyCloudData(data);
+    // Filtrar URLs duplicadas
+    const uniqueUrls = [...new Set(candidateUrls)];
+
+    for (const testUrl of uniqueUrls) {
+      try {
+        const res = await fetch(testUrl, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && (data.users || data.settings)) {
+            return this.applyCloudData(data);
+          }
+        }
+      } catch (_) {
+        // Probar siguiente URL candidata
+      }
     }
 
-    const data = await res.json();
-    return this.applyCloudData(data);
+    return false;
   }
 
   /**

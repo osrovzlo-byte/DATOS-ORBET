@@ -12,6 +12,7 @@ let currentFilter = {
   endDate: null
 };
 let currentPyramidMode = 'dia_actual';
+let currentPyramidResult = null;
 
 // ==========================================================================
 // INICIALIZACIÓN
@@ -735,7 +736,8 @@ function sharePronosticoWhatsApp() {
     `💣 *EL BOMBAZO:* ${p.elBombazo.num} ${p.elBombazo.name}\n` +
     `✨ *SERIE CALIENTE:* ${p.serieCaliente.nombre} (${p.serieCaliente.animales.map((a) => a.num + ' ' + a.name).join(', ')})\n` +
     `⭐ *ESTRELLA DE LA SUERTE:* ${p.estrellaSuerte.map((a) => a.num).join(' - ')}\n\n` +
-    `📲 Generado con *Datos Orbet, la app de la suerte*.`;
+    `📲 Generado con *Datos Orbet, la app de la suerte*.\n` +
+    `ℹ️ Obtén más información al número de WhatsApp +584247848287`;
 
   const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   window.open(waUrl, '_blank');
@@ -775,6 +777,7 @@ function generatePyramidAction() {
     customDate: customDate,
     isLong: isLong
   });
+  currentPyramidResult = result;
 
   const titleEl = document.getElementById('pyramid-title');
   const descEl = document.getElementById('pyramid-desc');
@@ -808,6 +811,28 @@ function generatePyramidAction() {
   document.getElementById('pred-cuatro').textContent = result.predictions.cuatroCifras.join(' - ');
   document.getElementById('pred-animalito').textContent = `${result.predictions.animalito.num} ${result.predictions.animalito.name}`;
   document.getElementById('pred-signo').textContent = result.predictions.signo;
+}
+
+function shareTrianguloWhatsApp() {
+  if (!currentPyramidResult) return;
+  
+  const p = currentPyramidResult;
+  const pred = p.predictions;
+  
+  const text = `🔺 *DATOS ORBET VIP - TRIÁNGULO DE LA SUERTE* 🔺\n` +
+    `📅 Generado para: ${p.dateFormatted}\n` +
+    `📝 Tipo: *${p.title}*\n\n` +
+    `🔥 *CÚSPIDE / CLAVE:* ${pred.peak}\n` +
+    `⚡ *TERMINALES CALIENTES:* ${pred.terminales.join(' - ')}\n` +
+    `✨ *TRIPLES DE LA SUERTE:* ${pred.triples.join(' - ')}\n` +
+    `⭐ *SUPER JUGADA 4 CIFRAS:* ${pred.cuatroCifras.join(' - ')}\n` +
+    `🐾 *ANIMALITO DE LA SUERTE:* ${pred.animalito.num} ${pred.animalito.name}\n` +
+    `♈ *SIGNO ZODIACAL CLAVE:* ${pred.signo}\n\n` +
+    `📲 Generado con *Datos Orbet, la app de la suerte*.\n` +
+    `ℹ️ Obtén más información al número de WhatsApp +584247848287`;
+
+  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
 }
 
 function generateInstantLuckyNumbers() {
