@@ -63,9 +63,20 @@
     },
     {
       "id": "usr_bettzabeth_vip",
-      "username": "Bettzabeth",
+      "username": "bettzabeth",
       "password": "12345",
       "name": "Bettzabeth",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-10-15",
+      "dispositivo_vinculado": null,
+      "createdAt": "2026-10-06"
+    },
+    {
+      "id": "usr_bettzabeth_vip",
+      "username": "deptecnico",
+      "password": "12345",
+      "name": "Departamento",
       "role": "vip",
       "status": "active",
       "expiresAt": "2026-10-15",
