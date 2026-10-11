@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-10-11T23:05:48.937Z",
+  "lastUpdated": "2026-10-09T19:59:00.228Z",
   "updatedBy": "admin",
   "settings": {
     "whatsapp": {
@@ -85,6 +85,17 @@
       "dispositivo_vinculado": null,
       "createdAt": "2026-10-06"
     },
+     {
+      "id": "usr_maria_vip",
+      "username": "maria",
+      "password": "12345",
+      "name": "Maria",
+      "role": "vip",
+      "status": "active",
+      "expiresAt": "2026-11-06",
+      "dispositivo_vinculado": null,
+      "createdAt": "2026-10-06"
+    },
     {
       "id": "usr_mariela_vip",
       "username": "mariela",
@@ -95,18 +106,6 @@
       "expiresAt": "2026-10-15",
       "dispositivo_vinculado": null,
       "createdAt": "2026-10-06"
-    },
-    {
-      "id": "usr_1791759905025_7fi9",
-      "username": "maria",
-      "password": "12345",
-      "name": "Maria Fernanda Delgado",
-      "role": "vip",
-      "status": "active",
-      "expiresAt": "2026-11-10",
-      "dispositivo_vinculado": null,
-      "lastLoginAt": null,
-      "createdAt": "2026-10-11"
     }
   ]
 }
