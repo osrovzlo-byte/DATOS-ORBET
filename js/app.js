@@ -630,7 +630,6 @@ function renderJuegoActivoView() {
       <div class="ja-card" style="border-left: 4px solid #ef4444;">
         <div class="ja-card-header" style="background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);">
           <span>🎯 DATO FIJO DEL DÍA</span>
-          <span>Efectividad: ${pronostico.datoFijo.probabilidad}</span>
         </div>
         <div class="ja-card-body">
           <div class="fijo-display">
@@ -731,7 +730,7 @@ function sharePronosticoWhatsApp() {
   const text = `🍀 *DATOS ORBET VIP - PRONÓSTICO OFICIAL* 🍀\n` +
     `📅 Fecha: ${p.fecha}\n` +
     `🐾 Lotería: *${p.loteriaNombre}*\n\n` +
-    `🔥 *DATO FIJO:* ${p.datoFijo.animal.num} ${p.datoFijo.animal.name} (Probabilidad: ${p.datoFijo.probabilidad} - Sorteo: ${p.datoFijo.horarioRecomendado})\n` +
+    `🔥 *DATO FIJO:* ${p.datoFijo.animal.num} ${p.datoFijo.animal.name} (Sorteo: ${p.datoFijo.horarioRecomendado})\n` +
     `⚡ *LA MOROCHA DE ORO:* ${p.laMorocha[0].num} ${p.laMorocha[0].name} y ${p.laMorocha[1].num} ${p.laMorocha[1].name}\n` +
     `💣 *EL BOMBAZO:* ${p.elBombazo.num} ${p.elBombazo.name}\n` +
     `✨ *SERIE CALIENTE:* ${p.serieCaliente.nombre} (${p.serieCaliente.animales.map((a) => a.num + ' ' + a.name).join(', ')})\n` +
