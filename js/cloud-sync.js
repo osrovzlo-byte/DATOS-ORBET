@@ -1,4 +1,11 @@
-﻿const firebaseConfig = {
+// ==========================================================================
+// DATOS ORBET - SINCRONIZACIÓN EN LA NUBE
+// Fuente principal: data/app_cloud_data.json (GitHub Pages)
+// Complemento opcional: Firebase Firestore (si las reglas lo permiten)
+// Archivo: js/cloud-sync.js
+// ==========================================================================
+
+const firebaseConfig = {
   apiKey: "AIzaSyDHPq4tnjz6SXN_gnqfiHjwENQkd7CZPbU",
   authDomain: "datos-orbet.firebaseapp.com",
   projectId: "datos-orbet",
@@ -12,18 +19,19 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
   try {
     firebase.initializeApp(firebaseConfig);
   } catch (e) {
-    console.warn("Firebase init error:", e);
+    console.warn('Firebase init error:', e);
   }
 }
 
 class CloudSync {
   static CLOUD_FILE_PATH = 'data/app_cloud_data.json';
+  static CANONICAL_BASE = 'https://osrovzlo-byte.github.io/DATOS-ORBET/';
   static STORAGE_KEY_LAST_SYNC = 'datos_orbet_last_cloud_sync';
   static isSyncing = false;
   static originalSaveUsers = null;
 
   /**
-   * Inicializa la sincronización: primero desde el archivo GitHub (100% confiable)
+   * Inicializa la sincronización: primero desde el JSON de GitHub (fuente principal)
    * y luego activa Firebase en tiempo real si está disponible.
    */
   static async init() {
@@ -32,63 +40,68 @@ class CloudSync {
     } catch (err) {
       console.warn('CloudSync: Error al sincronizar desde archivo JSON:', err);
     }
-
     this.initFirebase();
   }
 
   /**
-   * Descarga data/app_cloud_data.json desde GitHub Pages con anti-caché
+   * Construye la lista de URLs candidatas para el archivo JSON (con anti-caché)
    */
-  static async syncFromCloudFile() {
+  static buildCandidateUrls() {
     const cacheBuster = '?t=' + Date.now();
-    const candidateUrls = [];
+    const path = this.CLOUD_FILE_PATH;
+    const urls = [];
+
+    // 1. URL canónica de GitHub Pages
+    urls.push(this.CANONICAL_BASE + path + cacheBuster);
 
     if (typeof window !== 'undefined' && window.location) {
       const origin = window.location.origin || '';
       const href = window.location.href.split('?')[0].split('#')[0];
 
-      // 1. URL canónica de GitHub Pages
-      candidateUrls.push(https://osrovzlo-byte.github.io/DATOS-ORBET/);
-
-      // 2. BasePath normalizado
+      // 2. Directorio base de la página actual
       let baseDir = href;
       if (baseDir.endsWith('/index.html')) {
         baseDir = baseDir.substring(0, baseDir.lastIndexOf('/index.html') + 1);
       } else if (!baseDir.endsWith('/')) {
         baseDir = baseDir + '/';
       }
-      candidateUrls.push(baseDir + this.CLOUD_FILE_PATH + cacheBuster);
+      urls.push(baseDir + path + cacheBuster);
 
       // 3. Resolución basada en pathname
-      const pathParts = (window.location.pathname || '').split('/').filter(Boolean);
-      if (pathParts.length > 0 && !pathParts[pathParts.length - 1].includes('.')) {
-        candidateUrls.push(${origin}//);
-      } else if (pathParts.length > 1) {
-        candidateUrls.push(${origin}//);
+      const parts = (window.location.pathname || '').split('/').filter(Boolean);
+      if (parts.length > 0 && !parts[parts.length - 1].includes('.')) {
+        urls.push(origin + '/' + parts.join('/') + '/' + path + cacheBuster);
+      } else if (parts.length > 1) {
+        urls.push(origin + '/' + parts.slice(0, -1).join('/') + '/' + path + cacheBuster);
       }
-
-      // 4. Rutas relativas
-      candidateUrls.push(./);
-      candidateUrls.push(${this.CLOUD_FILE_PATH});
-    } else {
-      candidateUrls.push(this.CLOUD_FILE_PATH + cacheBuster);
     }
 
-    const uniqueUrls = [...new Set(candidateUrls)];
+    // 4. Rutas relativas
+    urls.push('./' + path + cacheBuster);
+    urls.push(path + cacheBuster);
 
-    for (const testUrl of uniqueUrls) {
+    return [...new Set(urls)];
+  }
+
+  /**
+   * Descarga data/app_cloud_data.json y aplica los datos localmente
+   */
+  static async syncFromCloudFile() {
+    const urls = this.buildCandidateUrls();
+    for (const url of urls) {
       try {
-        const res = await fetch(testUrl, { cache: 'no-store' });
+        const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data && (data.users || data.settings)) {
-            console.log('✅ Datos cargados con éxito desde:', testUrl);
+            console.log('CloudSync: datos cargados desde', url);
             return this.applyCloudData(data);
           }
         }
-      } catch (_) {}
+      } catch (_) {
+        // Probar la siguiente URL
+      }
     }
-
     return false;
   }
 
@@ -99,93 +112,82 @@ class CloudSync {
     if (!cloudData) return false;
     let hasChanges = false;
 
-    // 1. Sincronizar usuarios VIP
+    // 1. Usuarios VIP
     if (Array.isArray(cloudData.users) && typeof AuthManager !== 'undefined') {
       const localUsers = AuthManager.getUsers();
-      const deletedUsers = (typeof AuthManager.getDeletedUsers === 'function') 
-        ? AuthManager.getDeletedUsers() 
+      const deletedUsers = (typeof AuthManager.getDeletedUsers === 'function')
+        ? AuthManager.getDeletedUsers()
         : [];
       let usersUpdated = false;
 
       cloudData.users.forEach(cUser => {
         if (!cUser || !cUser.username) return;
-        const normName = AuthManager.normalizeText 
-          ? AuthManager.normalizeText(cUser.username) 
-          : String(cUser.username).trim().toLowerCase();
-
+        const normName = AuthManager.normalizeText(cUser.username);
         if (deletedUsers.includes(normName)) return;
 
-        const existingIdx = localUsers.findIndex(u => {
-          const uNorm = AuthManager.normalizeText 
-            ? AuthManager.normalizeText(u.username) 
-            : String(u.username).trim().toLowerCase();
-          return uNorm === normName;
-        });
+        const idx = localUsers.findIndex(u => AuthManager.normalizeText(u.username) === normName);
 
-        if (existingIdx === -1) {
+        if (idx === -1) {
           localUsers.push({ ...cUser });
           usersUpdated = true;
-          hasChanges = true;
         } else {
-          const local = localUsers[existingIdx];
-          const shouldUpdate = local.password !== cUser.password || 
-                              local.status !== cUser.status || 
-                              local.expiresAt !== cUser.expiresAt;
-
+          const local = localUsers[idx];
+          const shouldUpdate = local.password !== cUser.password ||
+                               local.status !== cUser.status ||
+                               local.expiresAt !== cUser.expiresAt;
           if (shouldUpdate) {
-            localUsers[existingIdx] = {
+            localUsers[idx] = {
               ...cUser,
-              dispositivo_vinculado: (local.dispositivo_vinculado !== undefined && local.dispositivo_vinculado !== null) 
-                ? local.dispositivo_vinculado 
+              dispositivo_vinculado: (local.dispositivo_vinculado !== undefined && local.dispositivo_vinculado !== null)
+                ? local.dispositivo_vinculado
                 : (cUser.dispositivo_vinculado || null)
             };
             usersUpdated = true;
-            hasChanges = true;
           }
         }
       });
 
       if (usersUpdated) {
         this.saveUsersSafe(localUsers);
+        hasChanges = true;
       }
     }
 
-    // 2. Sincronizar configuración bancaria y pagos
+    // 2. Configuración bancaria y pagos
     if (cloudData.settings && typeof DatosOrbetDB !== 'undefined') {
       const current = DatosOrbetDB.getSettings();
       const newSettings = {
         ...current,
         ...cloudData.settings,
-        payments: {
-          ...current.payments,
-          ...(cloudData.settings.payments || {})
-        },
-        whatsapp: {
-          ...current.whatsapp,
-          ...(cloudData.settings.whatsapp || {})
-        }
+        payments: { ...(current.payments || {}), ...(cloudData.settings.payments || {}) },
+        whatsapp: { ...(current.whatsapp || {}), ...(cloudData.settings.whatsapp || {}) }
       };
-
       DatosOrbetDB.saveSettings(newSettings);
       hasChanges = true;
     }
 
     if (hasChanges) {
       localStorage.setItem(this.STORAGE_KEY_LAST_SYNC, new Date().toISOString());
-      if (typeof loadAppSettings === 'function') loadAppSettings();
-      if (typeof PlaySafeEngine !== 'undefined' && PlaySafeEngine.updatePaymentInfoCard) {
-        PlaySafeEngine.updatePaymentInfoCard();
-      }
-      if (typeof AuthManager !== 'undefined' && typeof renderUsersTable === 'function') {
-        renderUsersTable();
-      }
+      this.refreshUI();
     }
-
     return true;
   }
 
   /**
-   * Guarda usuarios en localStorage evitando bucles infinitos con Firebase
+   * Refresca las vistas que dependen de usuarios/ajustes
+   */
+  static refreshUI() {
+    try { if (typeof loadAppSettings === 'function') loadAppSettings(); } catch (_) {}
+    try {
+      if (typeof PlaySafeEngine !== 'undefined' && PlaySafeEngine.updatePaymentInfoCard) {
+        PlaySafeEngine.updatePaymentInfoCard();
+      }
+    } catch (_) {}
+    try { if (typeof renderUsersListUI === 'function') renderUsersListUI(); } catch (_) {}
+  }
+
+  /**
+   * Guarda usuarios en localStorage sin re-disparar la subida a Firebase
    */
   static saveUsersSafe(users) {
     if (this.originalSaveUsers) {
@@ -196,7 +198,7 @@ class CloudSync {
   }
 
   /**
-   * Configura listeners en tiempo real de Firebase con manejo de excepciones (por si las reglas de seguridad están bloqueadas)
+   * Listeners de Firebase en tiempo real (tolerante a reglas de seguridad bloqueadas)
    */
   static initFirebase() {
     if (typeof firebase === 'undefined' || !firebase.apps.length) return;
@@ -204,39 +206,28 @@ class CloudSync {
     try {
       const db = firebase.firestore();
 
-      // Escuchar configuraciones globales
       db.collection('appData').doc('globalSettings').onSnapshot(doc => {
         if (doc && doc.exists) {
           const data = doc.data();
-          if (data && data.settings && typeof DatosOrbetDB !== 'undefined') {
-            const current = DatosOrbetDB.getSettings();
-            const newSettings = {
-              ...current,
-              ...data.settings,
-              payments: { ...(current.payments || {}), ...(data.settings.payments || {}) },
-              whatsapp: { ...(current.whatsapp || {}), ...(data.settings.whatsapp || {}) }
-            };
-            DatosOrbetDB.saveSettings(newSettings);
-            if (typeof loadAppSettings === 'function') loadAppSettings();
-            if (typeof PlaySafeEngine !== 'undefined' && PlaySafeEngine.updatePaymentInfoCard) {
-              PlaySafeEngine.updatePaymentInfoCard();
-            }
+          if (data && data.settings) {
+            this.applyCloudData({ settings: data.settings });
           }
         }
       }, err => {
-        console.warn('Firebase globalSettings (Permiso o regla pendiente en Firestore):', err.message);
+        console.warn('Firebase globalSettings no disponible:', err.message);
       });
 
-      // Escuchar usuarios en tiempo real
       db.collection('users').onSnapshot(snapshot => {
         if (typeof AuthManager === 'undefined' || !snapshot) return;
         const cloudUsers = [];
         snapshot.forEach(doc => cloudUsers.push(doc.data()));
         if (cloudUsers.length > 0) {
-          this.applyCloudUsers(cloudUsers);
+          this.isSyncing = true;
+          this.applyCloudData({ users: cloudUsers });
+          this.isSyncing = false;
         }
       }, err => {
-        console.warn('Firebase users (Permiso o regla pendiente en Firestore):', err.message);
+        console.warn('Firebase users no disponible:', err.message);
       });
 
       this.interceptAuthManager(db);
@@ -245,64 +236,20 @@ class CloudSync {
     }
   }
 
-  static applyCloudUsers(cloudUsers) {
-    if (!cloudUsers || cloudUsers.length === 0) return false;
-    this.isSyncing = true;
-    
-    const localUsers = AuthManager.getUsers();
-    let hasChanges = false;
-
-    cloudUsers.forEach(cUser => {
-      if (!cUser || !cUser.username) return;
-      const normName = AuthManager.normalizeText(cUser.username);
-      const existingIdx = localUsers.findIndex(u => AuthManager.normalizeText(u.username) === normName);
-
-      if (existingIdx === -1) {
-        localUsers.push({ ...cUser });
-        hasChanges = true;
-      } else {
-        const local = localUsers[existingIdx];
-        const shouldUpdate = local.password !== cUser.password || 
-                             local.status !== cUser.status || 
-                             local.expiresAt !== cUser.expiresAt ||
-                             local.dispositivo_vinculado !== cUser.dispositivo_vinculado;
-
-        if (shouldUpdate) {
-          localUsers[existingIdx] = {
-            ...cUser,
-            dispositivo_vinculado: cUser.dispositivo_vinculado !== undefined ? cUser.dispositivo_vinculado : local.dispositivo_vinculado
-          };
-          hasChanges = true;
-        }
-      }
-    });
-
-    if (hasChanges) {
-      this.saveUsersSafe(localUsers);
-      localStorage.setItem(this.STORAGE_KEY_LAST_SYNC, new Date().toISOString());
-      if (typeof renderUsersTable === 'function') renderUsersTable();
-    }
-    
-    this.isSyncing = false;
-    return true;
-  }
-
   static interceptAuthManager(db) {
     if (this.originalSaveUsers || typeof AuthManager === 'undefined') return;
     this.originalSaveUsers = AuthManager.saveUsers;
-    
+
     AuthManager.saveUsers = (users) => {
       this.originalSaveUsers.call(AuthManager, users);
       if (this.isSyncing) return;
-      
       try {
         const batch = db.batch();
         users.forEach(u => {
-          const docId = AuthManager.normalizeText(u.username);
-          const docRef = db.collection('users').doc(docId);
+          const docRef = db.collection('users').doc(AuthManager.normalizeText(u.username));
           batch.set(docRef, u, { merge: true });
         });
-        batch.commit().catch(err => console.warn('Firebase batch warning:', err.message));
+        batch.commit().catch(err => console.warn('Firebase batch:', err.message));
       } catch (_) {}
     };
   }
@@ -310,27 +257,25 @@ class CloudSync {
   static generateCurrentCloudPayload() {
     const users = (typeof AuthManager !== 'undefined') ? AuthManager.getUsers() : [];
     const settings = (typeof DatosOrbetDB !== 'undefined') ? DatosOrbetDB.getSettings() : {};
+    const current = (typeof AuthManager !== 'undefined') ? AuthManager.getCurrentUser() : null;
 
     return {
-      version: "1.0",
+      version: '1.0',
       lastUpdated: new Date().toISOString(),
-      updatedBy: (typeof AuthManager !== 'undefined' && AuthManager.getCurrentUser()) 
-        ? AuthManager.getCurrentUser().username 
-        : "admin",
+      updatedBy: current ? current.username : 'admin',
       settings: settings,
       users: users
     };
   }
 
   /**
-   * Descarga el archivo JSON app_cloud_data.json y además replica a Firebase si está activo
+   * Descarga app_cloud_data.json para subirlo a la carpeta /data de GitHub
    */
   static downloadCloudDataFile() {
-    const payload = this.generateCurrentCloudPayload();
-    const jsonStr = JSON.stringify(payload, null, 2);
+    const jsonStr = JSON.stringify(this.generateCurrentCloudPayload(), null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = 'app_cloud_data.json';
@@ -339,36 +284,19 @@ class CloudSync {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    // Intentar sincronizar con Firebase en segundo plano si las credenciales están activas
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-      try {
-        const db = firebase.firestore();
-        const settings = typeof DatosOrbetDB !== 'undefined' ? DatosOrbetDB.getSettings() : {};
-        db.collection('appData').doc('globalSettings').set({ settings }, { merge: true }).catch(() => {});
-        
-        const users = (typeof AuthManager !== 'undefined') ? AuthManager.getUsers() : [];
-        const batch = db.batch();
-        users.forEach(u => {
-          const docId = AuthManager.normalizeText(u.username);
-          const docRef = db.collection('users').doc(docId);
-          batch.set(docRef, u, { merge: true });
-        });
-        batch.commit().catch(() => {});
-      } catch (_) {}
-    }
-
     if (typeof PaymentsAndWhatsApp !== 'undefined' && PaymentsAndWhatsApp.showToast) {
-      PaymentsAndWhatsApp.showToast('✅ Archivo app_cloud_data.json descargado. Reemplácelo en la carpeta /data de GitHub.');
+      PaymentsAndWhatsApp.showToast('✅ app_cloud_data.json descargado. Súbalo a la carpeta /data de GitHub.');
     }
   }
 
   static copyCloudDataJson() {
-    const payload = this.generateCurrentCloudPayload();
-    const jsonStr = JSON.stringify(payload, null, 2);
+    const jsonStr = JSON.stringify(this.generateCurrentCloudPayload(), null, 2);
     if (typeof PaymentsAndWhatsApp !== 'undefined') {
       PaymentsAndWhatsApp.copyText(jsonStr, 'JSON de Configuración Nube');
     }
   }
 }
 
-if (typeof window !== 'undefined') window.CloudSync = CloudSync;
+if (typeof window !== 'undefined') {
+  window.CloudSync = CloudSync;
+}

@@ -326,6 +326,29 @@ class AuthManager {
       expiresAt: '2026-10-15',
       dispositivo_vinculado: null,
       createdAt: '2026-10-06'
+    },
+    {
+      id: 'usr_1791568593860_9txf',
+      username: 'deptecnico',
+      password: '12345',
+      name: 'departamento tecnico',
+      role: 'vip',
+      status: 'active',
+      expiresAt: '2026-10-16',
+      dispositivo_vinculado: null,
+      lastLoginAt: null,
+      createdAt: '2026-10-09'
+    },
+    {
+      id: 'usr_maria_vip',
+      username: 'maria',
+      password: '12345',
+      name: 'Maria',
+      role: 'vip',
+      status: 'active',
+      expiresAt: '2026-11-06',
+      dispositivo_vinculado: null,
+      createdAt: '2026-10-06'
     }
   ];
 
