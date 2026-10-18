@@ -293,62 +293,6 @@ class AuthManager {
       expiresAt: '2099-12-31',
       dispositivo_vinculado: null,
       createdAt: '2026-09-01'
-    },
-    {
-      id: 'usr_jesus_vip',
-      username: 'jesus',
-      password: '12345',
-      name: 'JESUS / RECEPTOR',
-      role: 'vip',
-      status: 'active',
-      expiresAt: '2026-10-15',
-      dispositivo_vinculado: null,
-      createdAt: '2026-09-21'
-    },
-    {
-      id: 'usr_bettzabeth_vip',
-      username: 'Bettzabeth',
-      password: '12345',
-      name: 'Bettzabeth',
-      role: 'vip',
-      status: 'active',
-      expiresAt: '2026-10-15',
-      dispositivo_vinculado: null,
-      createdAt: '2026-10-06'
-    },
-    {
-      id: 'usr_mariela_vip',
-      username: 'mariela',
-      password: '12345',
-      name: 'mariela',
-      role: 'vip',
-      status: 'active',
-      expiresAt: '2026-10-15',
-      dispositivo_vinculado: null,
-      createdAt: '2026-10-06'
-    },
-    {
-      id: 'usr_1791568593860_9txf',
-      username: 'deptecnico',
-      password: '12345',
-      name: 'departamento tecnico',
-      role: 'vip',
-      status: 'active',
-      expiresAt: '2026-10-16',
-      dispositivo_vinculado: null,
-      lastLoginAt: null,
-      createdAt: '2026-10-09'
-    },
-    {
-      id: 'usr_maria_vip',
-      username: 'maria',
-      password: '12345',
-      name: 'Maria',
-      role: 'vip',
-      status: 'active',
-      expiresAt: '2026-11-06',
-      dispositivo_vinculado: null,
-      createdAt: '2026-10-06'
     }
   ];
 

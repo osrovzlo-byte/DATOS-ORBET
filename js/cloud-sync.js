@@ -112,43 +112,52 @@ class CloudSync {
     if (!cloudData) return false;
     let hasChanges = false;
 
-    // 1. Usuarios VIP
+    // 1. Usuarios VIP (Sincronización fidedigna con la nube)
     if (Array.isArray(cloudData.users) && typeof AuthManager !== 'undefined') {
       const localUsers = AuthManager.getUsers();
-      const deletedUsers = (typeof AuthManager.getDeletedUsers === 'function')
-        ? AuthManager.getDeletedUsers()
-        : [];
-      let usersUpdated = false;
-
-      cloudData.users.forEach(cUser => {
-        if (!cUser || !cUser.username) return;
-        const normName = AuthManager.normalizeText(cUser.username);
-        if (deletedUsers.includes(normName)) return;
-
-        const idx = localUsers.findIndex(u => AuthManager.normalizeText(u.username) === normName);
-
-        if (idx === -1) {
-          localUsers.push({ ...cUser });
-          usersUpdated = true;
-        } else {
-          const local = localUsers[idx];
-          const shouldUpdate = local.password !== cUser.password ||
-                               local.status !== cUser.status ||
-                               local.expiresAt !== cUser.expiresAt;
-          if (shouldUpdate) {
-            localUsers[idx] = {
-              ...cUser,
-              dispositivo_vinculado: (local.dispositivo_vinculado !== undefined && local.dispositivo_vinculado !== null)
-                ? local.dispositivo_vinculado
-                : (cUser.dispositivo_vinculado || null)
-            };
-            usersUpdated = true;
-          }
+      const localMap = new Map();
+      localUsers.forEach(u => {
+        if (u && u.username) {
+          localMap.set(AuthManager.normalizeText(u.username), u);
         }
       });
 
-      if (usersUpdated) {
-        this.saveUsersSafe(localUsers);
+      // La nube es la fuente autorizada de qué usuarios existen
+      const updatedUsers = cloudData.users.map(cUser => {
+        if (!cUser || !cUser.username) return null;
+        const norm = AuthManager.normalizeText(cUser.username);
+        const local = localMap.get(norm);
+        return {
+          ...cUser,
+          // Conservar dispositivo vinculado local si la nube no tiene uno o si ya estaba vinculado localmente
+          dispositivo_vinculado: (local && local.dispositivo_vinculado)
+            ? local.dispositivo_vinculado
+            : (cUser.dispositivo_vinculado || null),
+          lastLoginAt: (local && local.lastLoginAt) ? local.lastLoginAt : (cUser.lastLoginAt || null)
+        };
+      }).filter(Boolean);
+
+      // Asegurar que el administrador principal siempre exista
+      const hasAdmin = updatedUsers.some(u => AuthManager.normalizeText(u.username) === 'admin');
+      if (!hasAdmin) {
+        const localAdmin = localMap.get('admin') || AuthManager.INITIAL_DEFAULT_USERS[0];
+        updatedUsers.unshift(localAdmin);
+      }
+
+      // Comprobar si hubo cambios respecto a la lista local
+      const isDifferent = updatedUsers.length !== localUsers.length ||
+        updatedUsers.some((u, i) => {
+          const l = localUsers[i];
+          if (!l) return true;
+          return u.username !== l.username ||
+                 u.password !== l.password ||
+                 u.status !== l.status ||
+                 u.expiresAt !== l.expiresAt ||
+                 u.dispositivo_vinculado !== l.dispositivo_vinculado;
+        });
+
+      if (isDifferent) {
+        this.saveUsersSafe(updatedUsers);
         hasChanges = true;
       }
     }
